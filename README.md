@@ -96,16 +96,19 @@ This interactive data visualization project explores the relationship between cr
 ### Installation
 ```bash
 # Clone repository
-git clone [repository-url]
-cd dc-crime-visualization
+git clone https://github.com/dhanesh-kh/IS-219.git
+cd IS-219
 
-# Install dependencies
-npm install
+
+# Install dependencies (using legacy peer deps due to React version requirements)
+npm install --legacy-peer-deps
 
 # Start development server
 npm run dev
 
 ```
+
+> **Note**: We use `--legacy-peer-deps` flag during installation due to peer dependency requirements of the react-leaflet-heatmap-layer-v3 package, which requires React 17.
 
 ## Project Structure
 ```

@@ -10,6 +10,11 @@
 /build
 /dist
 
+# Development
+/.vite
+.env
+.env.*
+
 # Misc
 .DS_Store
 .env.local
@@ -21,6 +26,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.npm/_logs/
 
 # Editor directories and files
 .vscode/*
@@ -31,3 +37,12 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
