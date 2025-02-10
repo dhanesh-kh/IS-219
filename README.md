@@ -99,6 +99,8 @@ This interactive data visualization project explores the relationship between cr
 git clone https://github.com/dhanesh-kh/IS-219.git
 cd IS-219
 
+# Clean install (if you've previously installed)
+rm -rf node_modules package-lock.json
 
 # Install dependencies (using legacy peer deps due to React version requirements)
 npm install --legacy-peer-deps
@@ -108,7 +110,7 @@ npm run dev
 
 ```
 
-> **Note**: We use `--legacy-peer-deps` flag during installation due to peer dependency requirements of the react-leaflet-heatmap-layer-v3 package, which requires React 17.
+> **Note**: We use `--legacy-peer-deps` flag during installation due to peer dependency requirements of the react-leaflet-heatmap-layer-v3 package, which requires React 17. If you encounter any issues, try removing the node_modules directory and package-lock.json file before reinstalling.
 
 ## Project Structure
 ```
