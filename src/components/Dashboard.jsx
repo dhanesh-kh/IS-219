@@ -163,33 +163,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">DC Crime Data Dashboard</h1>
-          <p className="text-gray-600 mt-2">
-            Interactive visualization of crime incidents in Washington DC (2024)
-          </p>
-        </header>
-
         <Suspense fallback={<DashboardSkeleton />}>
-          {/* Stats Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <StatCard
-              title="Total Incidents"
-              value={isLoading ? '-' : total}
-              icon="📊"
-            />
-            <StatCard
-              title="Active Filters"
-              value={getActiveFiltersCount()}
-              icon="🔍"
-            />
-            <StatCard
-              title="Time Range"
-              value="2024"
-              icon="📅"
-            />
-          </div>
-
           {/* Filters Section */}
           <div className="mb-6">
             <LazyChartComponent>
