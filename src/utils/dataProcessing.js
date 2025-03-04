@@ -27,6 +27,9 @@ const cleanRecord = (record) => {
       return null;
     }
 
+    // Debug log to see what's in the offense field
+    console.log('Offense value:', record.OFFENSE);
+
     return {
       // Geographic data - convert to numbers and validate
       latitude: parseFloat(record.LATITUDE) || 0,
@@ -68,18 +71,37 @@ const cleanRecord = (record) => {
   }
 };
 
-// Process data for heat map
+// Process data for heat map with weighted crime severity
 export const processHeatMapData = (data) => {
+  // Define crime severity weights
+  const crimeWeights = {
+    'HOMICIDE': 10,
+    'ASSAULT W/DANGEROUS WEAPON': 8,
+    'SEX ABUSE': 8,
+    'ROBBERY': 7,
+    'BURGLARY': 5,
+    'MOTOR VEHICLE THEFT': 4,
+    'THEFT F/AUTO': 3,
+    'THEFT/OTHER': 2,
+    'ARSON': 6,
+    'default': 1
+  };
+
   return data
     .filter(incident => incident.latitude && incident.longitude)
-    .map(incident => ({
-      lat: incident.latitude,
-      lng: incident.longitude,
-      offense: incident.offense,
-      reportDate: incident.reportDate,
-      shift: incident.shift,
-      weight: 1
-    }));
+    .map(incident => {
+      // Get weight based on crime type or default to 1
+      const severity = crimeWeights[incident.offense] || crimeWeights.default;
+      
+      return {
+        lat: incident.latitude,
+        lng: incident.longitude,
+        offense: incident.offense,
+        reportDate: incident.reportDate,
+        shift: incident.shift,
+        weight: severity // Use severity as weight for more accurate heat representation
+      };
+    });
 };
 
 // Process data for time distribution
@@ -104,7 +126,7 @@ export const processCrimeTypes = (data) => {
   }, {});
 
   return Object.entries(crimeCounts)
-    .map(([type, count]) => ({ type, count }))
+    .map(([offense, count]) => ({ offense, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10); // Get top 10 crime types
 };

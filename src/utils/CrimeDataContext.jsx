@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { processData, processHeatMapData, processTimeDistribution, processCrimeTypes, processTemporalTrends } from './dataProcessing';
+import { loadCensusData, correlateCrimeWithCensus } from './censusDataProcessing';
 
 const CrimeDataContext = createContext();
 
@@ -20,6 +21,10 @@ export const CrimeDataProvider = ({ children }) => {
     timeDistribution: [],
     crimeTypes: [],
     temporalTrends: [],
+    census: null,
+    censusCorrelations: [],
+    showCensusOverlay: false,
+    selectedCensusMetric: 'income',
     filters: {
       dateRange: null,
       crimeTypes: [],
@@ -142,14 +147,29 @@ export const CrimeDataProvider = ({ children }) => {
         if (csvData.length === 0) {
           throw new Error('No valid data rows in CSV');
         }
+        
+        // Load census data
+        const censusData = await loadCensusData();
 
-        // Process the data
+        // Process the crime data
         const processedData = await processData(csvData);
+
+        // Debug the processed crime types
+        console.log('Processed crime types:', processedData.crimeTypes);
+        
+        // Check for any 'Unknown' offenses
+        const unknownCount = processedData.rawData.filter(item => item.offense === 'UNKNOWN' || item.offense === 'Unknown').length;
+        console.log(`Number of Unknown offenses: ${unknownCount} out of ${processedData.rawData.length}`);
+        
+        // Create correlations between crime and census data
+        const censusCorrelations = correlateCrimeWithCensus(processedData.rawData, censusData);
         
         setData(prev => ({
           ...prev,
           isLoading: false,
-          ...processedData
+          ...processedData,
+          census: censusData,
+          censusCorrelations
         }));
       } catch (error) {
         console.error('Error loading crime data:', error);
@@ -204,7 +224,9 @@ export const CrimeDataProvider = ({ children }) => {
         heatMapData: processHeatMapData(filteredRawData),
         timeDistribution: processTimeDistribution(filteredRawData),
         crimeTypes: processCrimeTypes(filteredRawData),
-        temporalTrends: processTemporalTrends(filteredRawData)
+        temporalTrends: processTemporalTrends(filteredRawData),
+        // Recalculate census correlations with filtered data
+        censusCorrelations: correlateCrimeWithCensus(filteredRawData, prev.census)
       };
 
       console.log('Filtered data:', {
@@ -217,10 +239,34 @@ export const CrimeDataProvider = ({ children }) => {
       return newData;
     });
   };
+  
+  // Toggle census data overlay
+  const toggleCensusOverlay = () => {
+    console.log('Toggling census overlay');
+    setData(prev => {
+      const newState = {
+        ...prev,
+        showCensusOverlay: !prev.showCensusOverlay
+      };
+      console.log('New census overlay state:', newState.showCensusOverlay);
+      return newState;
+    });
+  };
+  
+  // Change the selected census metric for visualization
+  const selectCensusMetric = (metric) => {
+    console.log('Setting census metric to:', metric);
+    setData(prev => ({
+      ...prev,
+      selectedCensusMetric: metric
+    }));
+  };
 
   const value = {
     ...data,
-    filterData
+    filterData,
+    toggleCensusOverlay,
+    selectCensusMetric
   };
 
   return (

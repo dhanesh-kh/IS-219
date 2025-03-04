@@ -56,6 +56,21 @@ const calculateMovingAverage = (data, days = 7) => {
   });
 };
 
+// Empty state component
+const EmptyState = () => (
+  <div className="h-[500px] flex items-center justify-center bg-gray-50 rounded-lg">
+    <div className="text-center p-6">
+      <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 className="mt-2 text-lg font-medium text-gray-900">No Temporal Data Available</h3>
+      <p className="mt-1 text-sm text-gray-500">
+        Try adjusting your filters to see time-based crime patterns.
+      </p>
+    </div>
+  </div>
+);
+
 const TemporalAnalysis = ({ updateTemporalPatterns }) => {
   const { isLoading, error, rawData } = useCrimeData();
   const chartData = useChartData();
@@ -227,7 +242,11 @@ const TemporalAnalysis = ({ updateTemporalPatterns }) => {
   useEffect(() => {
     if (timePatterns._temporalData && updateTemporalPatterns) {
       console.log('Updating temporal patterns from effect:', timePatterns._temporalData);
-      updateTemporalPatterns(timePatterns._temporalData);
+      try {
+        updateTemporalPatterns(timePatterns._temporalData);
+      } catch (error) {
+        console.error("Error updating temporal patterns:", error);
+      }
     }
   }, [timePatterns, updateTemporalPatterns]);
 

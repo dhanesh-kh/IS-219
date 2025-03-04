@@ -18,4 +18,249 @@
 /* Dashboard card styles */
 .dashboard-card {
   @apply bg-white rounded-lg shadow-lg p-4;
-} 
+}
+
+/* Toggle switch styles */
+.toggle-checkbox {
+  right: 0;
+  z-index: 10;
+  transition: all 0.3s;
+}
+
+.toggle-checkbox:checked {
+  right: 4px;
+  transform: translateX(0.25rem);
+  border-color: white;
+}
+
+.toggle-label {
+  transition: background-color 0.3s;
+}
+
+/* Toggle container */
+.toggle-container {
+  @apply relative inline-block w-10 mr-2 align-middle select-none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Filter button styles with enhanced styling */
+.filter-btn {
+  @apply px-3 py-1.5 text-sm rounded-md transition flex items-center justify-center shadow-sm font-medium;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:active {
+  transform: translateY(1px);
+}
+
+.filter-btn-selected {
+  @apply bg-blue-500 text-white hover:bg-blue-600;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.filter-btn-unselected {
+  @apply bg-white text-gray-700 hover:bg-gray-100 border border-gray-200;
+}
+
+/* Category styles with improved visual feedback */
+.category-btn {
+  @apply flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition;
+  transition: all 0.2s ease;
+}
+
+.category-btn:hover {
+  transform: translateX(2px);
+}
+
+.category-btn-selected {
+  @apply text-blue-700 bg-blue-50 hover:bg-blue-100;
+}
+
+.category-btn-unselected {
+  @apply text-gray-700 hover:bg-gray-200;
+}
+
+/* Enhanced filter section styling */
+.filter-section {
+  @apply bg-white border border-gray-200 rounded-lg p-5 shadow-sm;
+  transition: all 0.2s ease-in-out;
+}
+
+.filter-section:hover {
+  @apply border-blue-200;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.filter-section-title {
+  @apply text-sm font-medium text-gray-800 mb-3 flex items-center;
+}
+
+.filter-section-description {
+  @apply text-xs text-gray-500 mb-4;
+}
+
+/* Correlation indicators */
+.correlation-indicator {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.correlation-negative {
+  background-color: #ef4444;
+}
+
+.correlation-neutral {
+  background-color: #9ca3af;
+}
+
+.correlation-positive {
+  background-color: #10b981;
+}
+
+/* Enhanced filter section styling */
+.filter-section {
+  @apply bg-white border border-gray-200 rounded-lg p-5 shadow-sm;
+  transition: all 0.2s ease-in-out;
+}
+
+.filter-section:hover {
+  @apply border-blue-200;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.filter-section-title {
+  @apply text-sm font-medium text-gray-800 mb-3 flex items-center;
+}
+
+.filter-section-description {
+  @apply text-xs text-gray-500 mb-4;
+}
+
+/* Time of Day button styles */
+.filter-time-btn {
+  @apply border rounded-lg py-3 px-2 transition-all duration-200 flex flex-col items-center;
+}
+
+/* Crime type category styles */
+.crime-type-category {
+  @apply flex items-center mb-1;
+}
+
+/* Crime type button styles */
+.crime-type-btn {
+  @apply text-xs py-1.5 px-3 border rounded-md inline-flex items-center transition-all duration-150;
+}
+
+.crime-type-btn:hover {
+  @apply shadow-sm transform -translate-y-0.5;
+}
+
+/* Date preset button styles */
+.date-preset-btn {
+  @apply text-xs py-1 px-2 rounded-md transition-colors border;
+}
+
+/* Crime types grid */
+.crime-types-grid {
+  @apply transition-all duration-300;
+}
+
+/* Color classes for categories */
+.bg-red-50 { background-color: rgba(254, 226, 226, 0.5); }
+.text-red-700 { color: rgb(185, 28, 28); }
+.border-red-300 { border-color: rgb(252, 165, 165); }
+
+.bg-blue-50 { background-color: rgba(219, 234, 254, 0.5); }
+.text-blue-700 { color: rgb(29, 78, 216); }
+.border-blue-300 { border-color: rgb(147, 197, 253); }
+
+.bg-purple-50 { background-color: rgba(237, 233, 254, 0.5); }
+.text-purple-700 { color: rgb(109, 40, 217); }
+.border-purple-300 { border-color: rgb(196, 181, 253); }
+
+.bg-yellow-50 { background-color: rgba(254, 252, 232, 0.5); }
+.text-yellow-700 { color: rgb(161, 98, 7); }
+.border-yellow-300 { border-color: rgb(253, 224, 71); }
+
+.bg-orange-50 { background-color: rgba(255, 247, 237, 0.5); }
+.text-orange-700 { color: rgb(194, 65, 12); }
+.border-orange-300 { border-color: rgb(253, 186, 116); }
+
+.bg-indigo-50 { background-color: rgba(238, 242, 255, 0.5); }
+.text-indigo-700 { color: rgb(67, 56, 202); }
+.border-indigo-300 { border-color: rgb(165, 180, 252); }
+
+/* Census data overlay colors */
+.income-overlay-low { background-color: rgba(254, 226, 226, 0.6); }
+.income-overlay-medium { background-color: rgba(254, 243, 199, 0.6); }
+.income-overlay-high { background-color: rgba(209, 250, 229, 0.6); }
+
+.education-overlay-low { background-color: rgba(219, 234, 254, 0.6); }
+.education-overlay-medium { background-color: rgba(199, 210, 254, 0.6); }
+.education-overlay-high { background-color: rgba(165, 180, 252, 0.6); }
+
+.poverty-overlay-low { background-color: rgba(254, 240, 138, 0.6); }
+.poverty-overlay-medium { background-color: rgba(253, 186, 116, 0.6); }
+.poverty-overlay-high { background-color: rgba(251, 113, 133, 0.6); }
+
+.housing-overlay-low { background-color: rgba(191, 219, 254, 0.6); }
+.housing-overlay-medium { background-color: rgba(147, 197, 253, 0.6); }
+.housing-overlay-high { background-color: rgba(96, 165, 250, 0.6); }
+
+/* Race diversity overlay */
+.diversity-overlay-low { background-color: rgba(252, 231, 243, 0.6); }
+.diversity-overlay-medium { background-color: rgba(216, 180, 254, 0.6); }
+.diversity-overlay-high { background-color: rgba(170, 114, 226, 0.6); }
+
+/* Census tooltip */
+.census-tooltip {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+}
+
+.census-tooltip-title {
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.census-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 2px 0;
+}
+
+.census-tooltip-label {
+  color: #6b7280;
+  margin-right: 8px;
+}
+
+.census-tooltip-value {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.census-tooltip-correlation {
+  background-color: #f3f4f6;
+  margin-top: 4px;
+  padding: 3px;
+  border-radius: 3px;
+  color: #4b5563;
+  font-size: 11px;
+}

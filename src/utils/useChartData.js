@@ -49,7 +49,7 @@ export const useChartData = () => {
     }, {});
 
     const crimeTypes = Object.entries(crimeTypeCounts)
-      .map(([type, count]) => ({ type, count, total }))
+      .map(([offense, count]) => ({ offense, count, total }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
