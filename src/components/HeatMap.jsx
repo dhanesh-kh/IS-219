@@ -848,12 +848,17 @@ const getMetricDescription = (metric) => {
 const HeatMap = ({ updateKeyInsights }) => {
   const { 
     heatMapData, 
-    rawData, 
+    rawData,
+    filteredRawData,
     isLoading, 
     showCensusOverlay, 
     selectedCensusMetric,
-    census
+    census,
+    filters
   } = useCrimeData();
+  
+  // Use filteredRawData if available, otherwise fall back to rawData
+  const displayData = filteredRawData || rawData;
   
   const [visibleMarkers, setVisibleMarkers] = useState([]);
   const [locationScores, setLocationScores] = useState({});
@@ -862,6 +867,44 @@ const HeatMap = ({ updateKeyInsights }) => {
   const [activeOverlays, setActiveOverlays] = useState([]);
   
   const mapRef = useRef(null);
+  
+  // Define the indicator class function within the component scope
+  // This function determines the appropriate indicator color based on demographic metric values
+  const getIndicatorClass = (metric, value, riskScore) => {
+    // For income: high income in high-risk area is unusual (red)
+    let result = 'bg-gray-400'; // Default value
+    
+    if (metric === 'income') {
+      // Make sure we're handling numeric values
+      const numericValue = typeof value === 'number' ? value : parseInt(value.replace(/[^0-9]/g, ''), 10);
+      console.log(`Income value: ${value}, parsed: ${numericValue}`);
+      
+      if (numericValue > 75000) {
+        result = 'bg-red-500';  // High income in high-risk area = unusual
+      } else if (numericValue > 50000) {
+        result = 'bg-gray-400'; // Medium income
+      } else {
+        result = 'bg-green-500'; // Low income in high-risk area = expected
+      }
+    }
+    // For poverty: high poverty in high-risk area is expected (green)
+    else if (metric === 'poverty') {
+      // Make sure we're handling numeric values
+      const numericValue = typeof value === 'number' ? value : parseInt(value, 10);
+      console.log(`Poverty value: ${value}, parsed: ${numericValue}`);
+      
+      if (numericValue > 20) {
+        result = 'bg-green-500'; // High poverty in high-risk area = expected
+      } else if (numericValue > 10) {
+        result = 'bg-gray-400'; // Medium poverty
+      } else {
+        result = 'bg-red-500';  // Low poverty in high-risk area = unusual
+      }
+    }
+    
+    console.log(`Indicator for ${metric}: ${value} -> ${result}`);
+    return result;
+  };
   
   // Effect to manually clean up any remaining map overlays when toggling off census data
   useEffect(() => {
@@ -924,25 +967,58 @@ const HeatMap = ({ updateKeyInsights }) => {
     }
   }, [showCensusOverlay]);
   
+  // Make sure handleBoundsChange uses displayData (filtered data when available)
+  const handleBoundsChange = useCallback((bounds) => {
+    if (!bounds) return;
+    
+    setCurrentBounds(bounds);
+    
+    if (!displayData || displayData.length === 0) {
+      setVisibleMarkers([]);
+      return;
+    }
+    
+    try {
+      // Filter markers to only show those in the current view
+      const visible = displayData.filter(incident => {
+        if (!incident || !incident.latitude || !incident.longitude) return false;
+        
+        return bounds.contains([incident.latitude, incident.longitude]);
+      });
+      
+      // Limit to 1000 markers for performance
+      setVisibleMarkers(visible.slice(0, 1000));
+    } catch (error) {
+      console.error('Error filtering visible markers:', error);
+      setVisibleMarkers([]);
+    }
+  }, [displayData]); // Use displayData instead of rawData
+  
+  // Force recalculation when filtered data changes
   useEffect(() => {
-    // Check if there's no data after filtering
-    if (rawData && rawData.length === 0 && !isLoading) {
+    if (currentBounds) {
+      // When displayData changes due to filters, update the visible markers
+      handleBoundsChange(currentBounds);
+    }
+  }, [displayData, currentBounds, handleBoundsChange]);
+  
+  // Update the risk score calculation to use displayData
+  useEffect(() => {
+    // If we have no data, clear everything
+    if (!displayData || displayData.length === 0) {
+      setLocationScores({});
       setHasData(false);
       return;
     }
     
     setHasData(true);
     
-    if (isLoading) return;
-    
     try {
-      // Calculate risk scores for locations
-      const scoresByLocation = rawData.reduce((acc, incident) => {
-        if (!incident) return acc;
+      // Calculate risk scores for locations based on the filtered data
+      const scoresByLocation = displayData.reduce((acc, incident) => {
+        if (!incident || !incident.block) return acc;
         
         const locationKey = incident.block;
-        
-        if (!locationKey) return acc;
         
         if (!acc[locationKey]) {
           acc[locationKey] = {
@@ -966,7 +1042,7 @@ const HeatMap = ({ updateKeyInsights }) => {
         return acc;
       }, {});
       
-      // Calculate risk scores
+      // Calculate risk scores with appropriate weights
       const crimeWeights = {
         'HOMICIDE': 10,
         'ASSAULT W/DANGEROUS WEAPON': 8,
@@ -988,46 +1064,39 @@ const HeatMap = ({ updateKeyInsights }) => {
           weightedScore += count * weight;
         });
         
-        locationData.riskScore = weightedScore;
+        // Apply a multiplier based on total count (frequency)
+        locationData.riskScore = weightedScore * (1 + Math.log(locationData.count) / 10);
       });
       
+      // Update the state
       setLocationScores(scoresByLocation);
       
-      // Only update insights if we have valid data
-      if (Object.keys(scoresByLocation).length > 0) {
-        updateKeyInsights?.(scoresByLocation);
+      // Notify parent component about high-risk areas
+      if (updateKeyInsights) {
+        const highRiskLocations = Object.entries(scoresByLocation)
+          .sort((a, b) => b[1].riskScore - a[1].riskScore)
+          .slice(0, 5)
+          .map(([location, data]) => ({
+            location,
+            riskScore: Math.round(data.riskScore),
+            count: data.count
+          }));
+          
+        updateKeyInsights({
+          highRiskAreas: highRiskLocations
+        });
       }
     } catch (error) {
-      console.error('Error processing heat map data:', error);
-      setHasData(false);
+      console.error('Error calculating risk scores:', error);
     }
-  }, [rawData, isLoading, updateKeyInsights]);
+  }, [displayData, updateKeyInsights]); // Use displayData as dependency
   
-  const handleBoundsChange = useCallback((bounds) => {
-    if (!bounds) return;
-    
-    setCurrentBounds(bounds);
-    
-    if (!rawData || rawData.length === 0) {
-      setVisibleMarkers([]);
-      return;
+  // Update visible markers when map bounds change
+  useEffect(() => {
+    if (currentBounds && !isLoading) {
+      handleBoundsChange(currentBounds);
     }
-    
-    try {
-      // Filter markers to only show those in the current view
-      const visible = rawData.filter(incident => {
-        if (!incident || !incident.latitude || !incident.longitude) return false;
-        
-        return bounds.contains([incident.latitude, incident.longitude]);
-      });
-      
-      // Limit to 1000 markers for performance
-      setVisibleMarkers(visible.slice(0, 1000));
-    } catch (error) {
-      console.error('Error filtering visible markers:', error);
-      setVisibleMarkers([]);
-    }
-  }, [rawData]);
+  }, [currentBounds, handleBoundsChange, isLoading]);
   
   const heatmapOptions = {
     radius: 20,
@@ -1054,8 +1123,8 @@ const HeatMap = ({ updateKeyInsights }) => {
     let lat = 38.9072;  // Default to DC center coordinates
     let lng = -77.0369;
     
-    // Check if we can get coords from rawData
-    for (const incident of rawData) {
+    // Check if we can get coords from displayData (filtered data) first
+    for (const incident of displayData) {
       if (incident && incident.block === locationStr && incident.latitude && incident.longitude) {
         lat = incident.latitude;
         lng = incident.longitude;
@@ -1089,6 +1158,7 @@ const HeatMap = ({ updateKeyInsights }) => {
             ref={mapRef}
             whenCreated={(mapInstance) => {
               if (mapInstance && mapInstance.getBounds) {
+                setCurrentBounds(mapInstance.getBounds());
                 handleBoundsChange(mapInstance.getBounds());
               }
             }}
@@ -1188,74 +1258,93 @@ const HeatMap = ({ updateKeyInsights }) => {
               <br />Try adjusting your filters to see high-risk areas.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {Object.entries(locationScores)
-                .sort(([, a], [, b]) => b.riskScore - a.riskScore)
-                .slice(0, 5)
-                .map(([location, data], index) => (
-                  <div 
-                    key={location} 
-                    className={`p-3 rounded-lg ${
-                      index === 0 ? 'bg-red-50 border border-red-100' : 'bg-white border border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-start">
-                      <div className={`rounded-full w-6 h-6 flex items-center justify-center text-xs text-white ${
-                        index === 0 ? 'bg-red-500' : 'bg-blue-500'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      <div className="ml-2">
-                        <h4 className="text-xs font-semibold truncate max-w-[120px]">{location}</h4>
-                        <div className="flex items-center mt-1">
-                          <div className="text-xs font-semibold">
-                            Risk Score: <span className={index === 0 ? 'text-red-600' : 'text-blue-600'}>
-                              {Math.round(data.riskScore)}
-                            </span>
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {Object.entries(locationScores)
+                  .sort(([, a], [, b]) => b.riskScore - a.riskScore)
+                  .slice(0, 5)
+                  .map(([location, data], index) => {
+                    // Get actual metrics for this location
+                    const neighborhood = getLocationNeighborhood(location);
+                    const incomeValue = getNeighborhoodMetric(data.lat, data.lng, 'income', true);
+                    const povertyValue = getNeighborhoodMetric(data.lat, data.lng, 'poverty');
+                    const educationValue = getNeighborhoodMetric(data.lat, data.lng, 'education');
+                    
+                    // Determine correlation level based on actual metrics for this location
+                    const incomeClass = getIndicatorClass('income', incomeValue, data.riskScore);
+                    const povertyClass = getIndicatorClass('poverty', povertyValue, data.riskScore);
+                    
+                    return (
+                      <div 
+                        key={location} 
+                        className={`p-3 rounded-lg ${
+                          index === 0 ? 'bg-red-50 border border-red-100' : 'bg-white border border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-start">
+                          <div className={`rounded-full w-6 h-6 flex items-center justify-center text-xs text-white ${
+                            index === 0 ? 'bg-red-500' : 'bg-blue-500'
+                          }`}>
+                            {index + 1}
                           </div>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {data.count} incidents
-                        </div>
-                        
-                        {/* Add census correlation indicator */}
-                        {census && (
-                          <div className="mt-2 pt-1 border-t border-gray-100">
-                            <div className="text-xs text-gray-500 mb-1">Demographic correlation:</div>
-                            <div className="flex items-center">
-                              <div className="group relative">
-                                <span 
-                                  className="inline-block w-3 h-3 rounded-full mr-1 cursor-help"
-                                  style={{ backgroundColor: getCorrelationColor('income', getLocationNeighborhood(location)) }}
-                                ></span>
-                                <span className="text-xs">Income</span>
-                                <div className="invisible group-hover:visible absolute z-10 w-60 bg-gray-800 text-white text-xs p-2 rounded -ml-2 mt-1">
-                                  {getCorrelationTooltip('income', getLocationNeighborhood(location))}
-                                </div>
+                          <div className="ml-2">
+                            <h4 className="text-xs font-semibold truncate max-w-[120px]">{location}</h4>
+                            <div className="flex items-center mt-1">
+                              <div className="text-xs font-semibold">
+                                Risk Score: <span className={index === 0 ? 'text-red-600' : 'text-blue-600'}>
+                                  {Math.round(data.riskScore)}
+                                </span>
                               </div>
-                              
-                              <div className="group relative ml-2">
-                                <span 
-                                  className="inline-block w-3 h-3 rounded-full mr-1 cursor-help"
-                                  style={{ backgroundColor: getCorrelationColor('poverty', getLocationNeighborhood(location)) }}
-                                ></span>
-                                <span className="text-xs">Poverty</span>
-                                <div className="invisible group-hover:visible absolute z-10 w-60 bg-gray-800 text-white text-xs p-2 rounded -ml-2 mt-1">
-                                  {getCorrelationTooltip('poverty', getLocationNeighborhood(location))}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {data.count} incidents
+                            </div>
+                            
+                            {/* Enhanced demographic context */}
+                            <div className="mt-2 pt-1 border-t border-gray-100">
+                              <div className="text-xs text-gray-500 mb-1">Area demographics:</div>
+                              <div className="grid grid-cols-2 gap-1 text-xs">
+                                <div className="flex items-center">
+                                  <span className={`inline-block w-2 h-2 rounded-full mr-1 ${incomeClass}`}></span>
+                                  <span>Income:</span>
+                                </div>
+                                <span className="font-medium">${incomeValue.toLocaleString()}</span>
+                                
+                                <div className="flex items-center">
+                                  <span className={`inline-block w-2 h-2 rounded-full mr-1 ${povertyClass}`}></span>
+                                  <span>Poverty:</span>
+                                </div>
+                                <span className="font-medium">{povertyValue}%</span>
+                                
+                                <div className="flex items-center col-span-2 mt-1">
+                                  <span className="text-[10px] text-gray-500 leading-tight">
+                                    {neighborhood}, {educationValue}% higher education
+                                  </span>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
+              </div>
+              <p className="text-sm text-gray-600 mt-4">
+                Crime types are assigned different risk weights (based on severity), ranging from 10× (homicide) to 1× for general theft. 
+                These weights are used in risk calculations for specific high-crime areas.
+              </p>
+              <div className="mt-1 text-xs text-gray-500 flex flex-wrap gap-2">
+                <div className="flex items-center">
+                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>
+                  <span>Unusual pattern (high income or low poverty in high-risk area)</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
+                  <span>Expected pattern (low income or high poverty in high-risk area)</span>
+                </div>
+              </div>
             </div>
           )}
-          <p className="text-xs text-gray-500 mt-3">
-            Crime types are assigned different risk weights (based on severity), ranging from 10x (homicide) to 1x for general theft. These weights are used in risk calculations for specific high-crime areas.
-          </p>
         </div>
       </div>
     </div>

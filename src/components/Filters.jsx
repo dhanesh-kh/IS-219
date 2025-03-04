@@ -42,8 +42,8 @@ const getCategoryForCrimeType = (type) => {
 };
 
 const Filters = () => {
-  const {
-    rawData,
+  const { 
+    rawData, 
     filterData,
     filters,
     isLoading,
@@ -125,7 +125,7 @@ const Filters = () => {
       start: startDate && isValid(parseISO(startDate)) ? parseISO(startDate) : null,
       end: endDate && isValid(parseISO(endDate)) ? parseISO(endDate) : null
     };
-    
+
     filterData({
       dateRange: dateRange.start || dateRange.end ? dateRange : null,
       crimeTypes: selectedCrimeTypes,
@@ -152,8 +152,8 @@ const Filters = () => {
       setActiveDateFilters(false);
       setActiveCrimeTypeFilters(false);
       setActiveTimeFilters(false);
-      
-      filterData({
+
+    filterData({
         dateRange: null,
         crimeTypes: [],
         shifts: []
@@ -400,9 +400,9 @@ const Filters = () => {
                 )}
               </div>
             )}
-          </p>
-        </div>
-        
+        </p>
+      </div>
+
         <div className="flex sm:mt-0">
           <button
             onClick={resetFilters}
@@ -420,7 +420,7 @@ const Filters = () => {
           </button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Date Range - Simplified Design with Fewer Calendar Icons */}
         <div className={`filter-section hover:shadow-md transition-all duration-200 ${activeDateFilters ? 'border-blue-300 bg-blue-50/10' : ''}`}>
@@ -530,13 +530,13 @@ const Filters = () => {
           <div className="border-t border-gray-200 pt-3 mt-3">
             <h4 className="text-xs font-medium text-gray-700 mb-2">Custom Date Range:</h4>
             <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div>
                 <label htmlFor="start-date" className="block text-xs font-medium text-gray-700 mb-1.5">
                   Start Date
                 </label>
                 <div className="relative">
-                  <input
-                    type="date"
+              <input
+                type="date"
                     id="start-date"
                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:ring-opacity-50 transition-all"
                     value={startDate}
@@ -549,14 +549,14 @@ const Filters = () => {
                     aria-label="Start date"
                   />
                 </div>
-              </div>
-              <div>
+            </div>
+            <div>
                 <label htmlFor="end-date" className="block text-xs font-medium text-gray-700 mb-1.5">
                   End Date
                 </label>
                 <div className="relative">
-                  <input
-                    type="date"
+              <input
+                type="date"
                     id="end-date"
                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:ring-opacity-50 transition-all"
                     value={endDate}
@@ -662,7 +662,7 @@ const Filters = () => {
                   key={shift.id}
                   onClick={() => toggleShift(shift)}
                   className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200
-                    ${isSelected
+                    ${isSelected 
                       ? 'bg-yellow-100 border-yellow-400 text-yellow-800 shadow-sm transform -translate-y-0.5'
                       : 'bg-white text-gray-700 border-gray-200 hover:bg-yellow-50 hover:border-yellow-300'}`}
                   title={shift.description}
@@ -687,9 +687,9 @@ const Filters = () => {
               );
             })}
           </div>
+          </div>
         </div>
-      </div>
-      
+
       {/* Demographic Data Overlay - Enhanced for better UX */}
       <div className="mt-6 p-5 rounded-lg border-2 bg-white shadow-sm transition-all duration-300 ease-in-out
         hover:shadow-md"
@@ -704,7 +704,7 @@ const Filters = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
               </svg>
             </div>
-            <div>
+        <div>
               <h3 className="text-base font-semibold flex items-center">
                 Demographic Data Overlay
                 {showCensusOverlay && (
@@ -726,8 +726,8 @@ const Filters = () => {
           <div className="flex items-center">
             <span className="text-xs text-gray-500 mr-2">{showCensusOverlay ? 'Enabled' : 'Disabled'}</span>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
+                    <input
+                      type="checkbox"
                 checked={showCensusOverlay}
                 onChange={toggleCensusOverlay}
                 className="sr-only peer"
@@ -818,7 +818,7 @@ const Filters = () => {
                     <div className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                        </svg>
                     </div>
                   </div>
                 )}
@@ -1111,4 +1111,4 @@ const Filters = () => {
   );
 };
 
-export default Filters;
+export default Filters; 

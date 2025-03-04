@@ -17,6 +17,7 @@ export const CrimeDataProvider = ({ children }) => {
     isLoading: true,
     error: null,
     rawData: [],
+    filteredRawData: [],
     heatMapData: [],
     timeDistribution: [],
     crimeTypes: [],
@@ -168,6 +169,7 @@ export const CrimeDataProvider = ({ children }) => {
           ...prev,
           isLoading: false,
           ...processedData,
+          filteredRawData: processedData.rawData, // Initially the filtered data is the same as raw data
           census: censusData,
           censusCorrelations
         }));
@@ -221,6 +223,8 @@ export const CrimeDataProvider = ({ children }) => {
       const newData = {
         ...prev,
         filters,
+        filteredRawData: filteredRawData, // Store the filtered data separately  
+        // Use filteredRawData for all derived data
         heatMapData: processHeatMapData(filteredRawData),
         timeDistribution: processTimeDistribution(filteredRawData),
         crimeTypes: processCrimeTypes(filteredRawData),

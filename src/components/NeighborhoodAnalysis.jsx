@@ -471,26 +471,73 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
     return 'No significant correlation with crime patterns can be established with the available data.';
   };
 
+  // Helper function to format cluster names - MOVED BEFORE IT'S USED
+  const formatClusterName = (clusterName) => {
+    if (!clusterName) return "Unknown";
+    return clusterName.replace('Cluster', 'District').trim();
+  };
+
+  // Extract key insights for area summary
+  const areaInsightsSummary = useMemo(() => {
+    if (!analysisData || !neighborhoodData || neighborhoodData.length === 0) {
+      return null;
+    }
+    
+    // Find top cluster and crime count - ensure we're using the filtered data
+    const topCluster = neighborhoodData[0]; // Already sorted by total
+    
+    // Calculate top crime type
+    const crimeTypeCounts = {};
+    rawData.forEach(incident => {
+      if (incident && incident.offense) {
+        crimeTypeCounts[incident.offense] = (crimeTypeCounts[incident.offense] || 0) + 1;
+      }
+    });
+    
+    const topCrimeEntry = Object.entries(crimeTypeCounts)
+      .sort((a, b) => b[1] - a[1])[0];
+    
+    // Calculate percentage from top 5 neighborhoods
+    const top5Neighborhoods = [...neighborhoodData].slice(0, 5); // Already sorted by total
+      
+    const top5Count = top5Neighborhoods.reduce((sum, n) => sum + n.total, 0);
+    const totalIncidents = rawData.length;
+    const top5Percentage = totalIncidents > 0 ? ((top5Count / totalIncidents) * 100).toFixed(1) : "0";
+    
+    // Calculate property crime percentage
+    const propertyCrimeTypes = ['THEFT/OTHER', 'THEFT F/AUTO', 'BURGLARY', 'MOTOR VEHICLE THEFT'];
+    const propertyCrimeCount = rawData.filter(i => i && propertyCrimeTypes.includes(i.offense)).length;
+    const propertyCrimePercentage = totalIncidents > 0 ? ((propertyCrimeCount / totalIncidents) * 100).toFixed(1) : "0";
+    
+    return {
+      topClusterName: formatClusterName(topCluster.neighborhood),
+      topClusterCount: topCluster.total || 0,
+      topCrimeType: topCrimeEntry?.[0] || "Unknown",
+      topCrimeCount: topCrimeEntry?.[1] || 0,
+      top5Percentage,
+      propertyCrimePercentage
+    };
+  }, [neighborhoodData, analysisData, rawData]);
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold text-gray-800">Crime Distribution by Neighborhood</h2>
-        {insights && (
-          <div className="flex items-center space-x-3 text-sm">
-            <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <div className="space-y-5">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-gray-800">Crime Distribution by Neighborhood</h2>
+        {neighborhoodData && neighborhoodData.length > 0 && (
+          <div className="flex space-x-4">
+            <div className="bg-blue-50 px-3 py-1 rounded-full text-sm flex items-center">
+              <svg className="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span>Top area: <span className="font-medium">{insights.highestCrime.neighborhood.replace('Cluster ', 'District ')}</span></span>
+              Top area: {formatClusterName(neighborhoodData[0]?.neighborhood)}
             </div>
-            {insights.predominantType && (
-              <div className="flex items-center bg-purple-50 text-purple-700 px-3 py-1 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span>Common crime: <span className="font-medium" style={{color: CRIME_COLORS[insights.predominantType[0]]}}>{insights.predominantType[0]}</span></span>
-              </div>
-            )}
+            <div className="bg-purple-50 px-3 py-1 rounded-full text-sm flex items-center">
+              <svg className="w-4 h-4 mr-1 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Common crime: {insights?.predominantType?.[0] || (areaInsightsSummary?.topCrimeType || 'N/A')}
+            </div>
           </div>
         )}
       </div>
@@ -604,11 +651,40 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
       </div>
       )}
       
-      {/* Census Data Display - if overlay is enabled */}
-      {showCensusOverlay && census && neighborhoodData.length > 0 && (
-        <div className="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <h3 className="text-lg font-semibold text-blue-800 mb-3">Demographic Factors by Neighborhood</h3>
+      {/* Consolidated Crime and Demographic Insights Section */}
+      {census && neighborhoodData.length > 0 && areaInsightsSummary && (
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+          <h3 className="text-lg font-semibold text-blue-800 mb-3">Area & Demographic Insights</h3>
+          
+          {/* Area & Crime Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+            <div className="p-3 bg-white rounded-md border border-blue-50">
+              <p className="text-sm text-gray-800">
+                <span className="font-medium text-blue-800">{areaInsightsSummary.topClusterName}</span> recorded the highest number of incidents with{' '}
+                <span className="font-semibold text-blue-900">{areaInsightsSummary.topClusterCount.toLocaleString()}</span> total crimes
+              </p>
+            </div>
+            <div className="p-3 bg-white rounded-md border border-blue-50">
+              <p className="text-sm text-gray-800">
+                <span className="font-medium text-blue-800">{areaInsightsSummary.topCrimeType}</span> is the most frequent crime type with{' '}
+                <span className="font-semibold text-blue-900">{areaInsightsSummary.topCrimeCount.toLocaleString()}</span> incidents
+              </p>
+            </div>
+            <div className="p-3 bg-white rounded-md border border-blue-50">
+              <p className="text-sm text-gray-800">
+                The top 5 neighborhoods account for <span className="font-semibold text-blue-900">{areaInsightsSummary.top5Percentage}%</span> of all reported incidents
+              </p>
+            </div>
+            <div className="p-3 bg-white rounded-md border border-blue-50">
+              <p className="text-sm text-gray-800">
+                Property crimes make up <span className="font-semibold text-blue-900">{areaInsightsSummary.propertyCrimePercentage}%</span> of all incidents
+              </p>
+            </div>
+          </div>
+          
+          {/* Demographic Table */}
           <div>
+            <h4 className="text-md font-medium text-blue-700 mb-2">Demographic Factors by Neighborhood</h4>
             <table className="w-full bg-white table-fixed">
               <thead className="bg-blue-100">
                 <tr>
@@ -619,52 +695,58 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-blue-100">
-                {neighborhoodData.map((n, index) => {
-                  const censusValue = neighborhoodCensusData[n.neighborhood]?.[selectedCensusMetric];
-                  const formattedValue = formatCensusValue(censusValue, selectedCensusMetric);
-                  
-                  return (
-                    <tr key={n.neighborhood} className={index % 2 === 0 ? 'bg-blue-50' : 'bg-white'}>
-                      <td className="py-2 px-4 text-sm text-gray-700">{n.neighborhood}</td>
-                      <td className="py-2 px-4 text-sm text-gray-700">{n.total}</td>
-                      <td className="py-2 px-4 text-sm text-gray-700">{formattedValue}</td>
-                      <td className="py-2 px-4 relative">
-                        <div className="flex items-center">
-                          <div className="group relative">
-                            <span 
-                              className="inline-block w-3 h-3 rounded-full mr-2 cursor-help"
-                              style={{ 
-                                backgroundColor: getCorrelationIndicatorColor(selectedCensusMetric, censusValue, n.total, neighborhoodData)
-                              }}
-                            ></span>
-                            {getCorrelationText(selectedCensusMetric, censusValue, n.total, neighborhoodData).includes('Anomaly') ? (
-                              <span className="text-xs font-medium flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                                <span className="text-amber-600">{getCorrelationText(selectedCensusMetric, censusValue, n.total, neighborhoodData)}</span>
-                              </span>
-                            ) : (
-                              <span className="text-xs text-gray-600">
-                                {getCorrelationText(selectedCensusMetric, censusValue, n.total, neighborhoodData)}
-                              </span>
-                            )}
-                            <div className="invisible group-hover:visible absolute z-50 w-72 bg-gray-800 text-white text-xs p-2 rounded mt-1 -ml-2 shadow-lg" 
-                                 style={{ 
-                                   left: "0", 
-                                   transform: index >= 3 ? "translateY(-100%)" : "", 
-                                   bottom: index >= 3 ? "24px" : "", 
-                                   top: index < 3 ? "24px" : ""
-                                 }}>
-                              <div className="font-medium mb-1">{getCorrelationTooltipBaseInfo(selectedCensusMetric, censusValue, n.neighborhood)}</div>
-                              <div>{getCorrelationTooltipExplanation(selectedCensusMetric, censusValue, n.total, neighborhoodData)}</div>
+                {neighborhoodData
+                  .filter(n => {
+                    // Filter out neighborhoods with no census data
+                    const censusValue = neighborhoodCensusData[n.neighborhood]?.[selectedCensusMetric];
+                    return censusValue !== null && censusValue !== undefined && censusValue !== 'N/A';
+                  })
+                  .map((n, index) => {
+                    const censusValue = neighborhoodCensusData[n.neighborhood]?.[selectedCensusMetric];
+                    const formattedValue = formatCensusValue(censusValue, selectedCensusMetric);
+                    
+                    return (
+                      <tr key={n.neighborhood} className={index % 2 === 0 ? 'bg-blue-50' : 'bg-white'}>
+                        <td className="py-2 px-4 text-sm text-gray-700">{formatClusterName(n.neighborhood)}</td>
+                        <td className="py-2 px-4 text-sm text-gray-700">{n.total}</td>
+                        <td className="py-2 px-4 text-sm text-gray-700">{formattedValue}</td>
+                        <td className="py-2 px-4 relative">
+                          <div className="flex items-center">
+                            <div className="group relative">
+                              <span 
+                                className="inline-block w-3 h-3 rounded-full mr-2 cursor-help"
+                                style={{ 
+                                  backgroundColor: getCorrelationIndicatorColor(selectedCensusMetric, censusValue, n.total, neighborhoodData)
+                                }}
+                              ></span>
+                              {getCorrelationText(selectedCensusMetric, censusValue, n.total, neighborhoodData).includes('Anomaly') ? (
+                                <span className="text-xs font-medium flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                  </svg>
+                                  <span className="text-amber-600">{getCorrelationText(selectedCensusMetric, censusValue, n.total, neighborhoodData)}</span>
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-600">
+                                  {getCorrelationText(selectedCensusMetric, censusValue, n.total, neighborhoodData)}
+                                </span>
+                              )}
+                              <div className="invisible group-hover:visible absolute z-50 w-72 bg-gray-800 text-white text-xs p-2 rounded mt-1 -ml-2 shadow-lg" 
+                                  style={{ 
+                                    left: "0", 
+                                    transform: index >= 3 ? "translateY(-100%)" : "", 
+                                    bottom: index >= 3 ? "24px" : "", 
+                                    top: index < 3 ? "24px" : ""
+                                  }}>
+                                <div className="font-medium mb-1">{getCorrelationTooltipBaseInfo(selectedCensusMetric, censusValue, n.neighborhood)}</div>
+                                <div>{getCorrelationTooltipExplanation(selectedCensusMetric, censusValue, n.total, neighborhoodData)}</div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
