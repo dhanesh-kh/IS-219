@@ -10,10 +10,28 @@ const CensusControls = () => {
     census
   } = useCrimeData();
 
+  // Added logging for debugging
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Census data in CensusControls:', census);
+    }
+  }, [census]);
+
   // Cannot render controls if no census data is available
   if (!census) {
-    console.warn('Census controls not rendering: no census data available');
-    return null;
+    // Return a simplified version instead of null
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4">
+        <div className="p-4 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p className="text-sm text-gray-600">
+            Demographic data is not available. Some features may be limited.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Demographic metrics with improved icons and descriptions
@@ -177,45 +195,7 @@ const CensusControls = () => {
             )}
           </div>
           
-          {/* DC Demographics Summary */}
-          <div className="p-3 border-t border-gray-200 bg-gray-50">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium text-gray-700">DC Demographics</h4>
-              <div className="flex items-center text-xs text-gray-500">
-                <span className="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>
-                <span className="mr-3">More Crime</span>
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
-                <span>Less Crime</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-4 gap-2">
-              <div className="bg-white p-2 rounded border border-gray-200">
-                <span className="text-xs text-gray-500">Higher Education</span>
-                <div className="text-sm font-semibold text-blue-700">
-                  {census.derivedMetrics?.higherEducationPercentage?.toFixed(1) || '65.9'}%
-                </div>
-              </div>
-              <div className="bg-white p-2 rounded border border-gray-200">
-                <span className="text-xs text-gray-500">Poverty Rate</span>
-                <div className="text-sm font-semibold text-red-600">
-                  {census.derivedMetrics?.povertyPercentage?.toFixed(1) || '14.0'}%
-                </div>
-              </div>
-              <div className="bg-white p-2 rounded border border-gray-200">
-                <span className="text-xs text-gray-500">Housing Value</span>
-                <div className="text-sm font-semibold text-blue-700">
-                  ${(census.derivedMetrics?.medianHousingValue || 715500).toLocaleString()}
-                </div>
-              </div>
-              <div className="bg-white p-2 rounded border border-gray-200">
-                <span className="text-xs text-gray-500">Diversity</span>
-                <div className="text-sm font-semibold text-purple-600">
-                  {(census.derivedMetrics?.diversityIndex * 100)?.toFixed(1) || '68.5'}%
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* DC Demographics section removed - now integrated in Dashboard */}
         </div>
       )}
       

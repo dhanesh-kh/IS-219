@@ -149,9 +149,6 @@ export const CrimeDataProvider = ({ children }) => {
           throw new Error('No valid data rows in CSV');
         }
         
-        // Load census data
-        const censusData = await loadCensusData();
-
         // Process the crime data
         const processedData = await processData(csvData);
 
@@ -162,8 +159,27 @@ export const CrimeDataProvider = ({ children }) => {
         const unknownCount = processedData.rawData.filter(item => item.offense === 'UNKNOWN' || item.offense === 'Unknown').length;
         console.log(`Number of Unknown offenses: ${unknownCount} out of ${processedData.rawData.length}`);
         
-        // Create correlations between crime and census data
-        const censusCorrelations = correlateCrimeWithCensus(processedData.rawData, censusData);
+        // Load census data with better error handling
+        let censusData = null;
+        let censusCorrelations = [];
+        
+        try {
+          console.log('Attempting to load census data...');
+          censusData = await loadCensusData();
+          console.log('Census data loaded successfully:', !!censusData);
+          
+          if (censusData) {
+            // Create correlations between crime and census data
+            censusCorrelations = correlateCrimeWithCensus(processedData.rawData, censusData);
+            console.log('Census correlations created successfully');
+          } else {
+            console.warn('Census data is null or undefined');
+          }
+        } catch (censusError) {
+          console.error('Error loading census data:', censusError);
+          // Don't fail the entire app if census data fails to load
+          censusData = null;
+        }
         
         setData(prev => ({
           ...prev,

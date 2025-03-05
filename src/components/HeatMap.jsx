@@ -1137,12 +1137,13 @@ const HeatMap = ({ updateKeyInsights }) => {
   };
   
   return (
-    <div className="flex flex-col">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">Crime Distribution Map</h2>
-      
-      {/* Census controls */}
+    <div className="space-y-4">
+      <div className="flex flex-wrap justify-between items-center mb-4">
+      </div>
+
+      {/* Census Controls - Always show the toggle, we no longer need the hideDemographics prop */}
       {census && <CensusControls />}
-      
+
       <div className="rounded-lg overflow-hidden" style={{ height: '500px' }}>
         {isLoading ? (
           <div className="h-full flex items-center justify-center bg-gray-100">

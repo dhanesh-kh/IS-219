@@ -483,46 +483,76 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
       return null;
     }
     
+    // Determine active crime types for filtering
+    const activeCrimeTypes = filters.crimeTypes.length > 0 
+      ? filters.crimeTypes 
+      : Object.keys(CRIME_COLORS).filter(key => key !== 'default');
+
+    // Filter data based on current filters
+    const filteredData = rawData.filter(incident => {
+      // Skip invalid incidents
+      if (!incident) return false;
+      
+      // Date range filter
+      if (filters.dateRange) {
+        const { start, end } = filters.dateRange;
+        if (!incident.reportDate || (start && incident.reportDate < start) || (end && incident.reportDate > end)) {
+          return false;
+        }
+      }
+
+      // Crime type filter
+      if (filters.crimeTypes.length > 0 && !filters.crimeTypes.includes(incident.offense)) {
+        return false;
+      }
+
+      // Shift filter
+      if (filters.shifts.length > 0 && !filters.shifts.includes(incident.shift)) {
+        return false;
+      }
+
+      return true;
+    });
+    
     // Find top cluster and crime count - ensure we're using the filtered data
     const topCluster = neighborhoodData[0]; // Already sorted by total
     
     // Calculate top crime type
     const crimeTypeCounts = {};
-    rawData.forEach(incident => {
+    filteredData.forEach(incident => {
       if (incident && incident.offense) {
         crimeTypeCounts[incident.offense] = (crimeTypeCounts[incident.offense] || 0) + 1;
       }
     });
     
     const topCrimeEntry = Object.entries(crimeTypeCounts)
-      .sort((a, b) => b[1] - a[1])[0];
+      .sort((a, b) => b[1] - a[1])[0] || ["None", 0];
     
     // Calculate percentage from top 5 neighborhoods
     const top5Neighborhoods = [...neighborhoodData].slice(0, 5); // Already sorted by total
       
     const top5Count = top5Neighborhoods.reduce((sum, n) => sum + n.total, 0);
-    const totalIncidents = rawData.length;
+    const totalIncidents = filteredData.length;
     const top5Percentage = totalIncidents > 0 ? ((top5Count / totalIncidents) * 100).toFixed(1) : "0";
     
     // Calculate property crime percentage
     const propertyCrimeTypes = ['THEFT/OTHER', 'THEFT F/AUTO', 'BURGLARY', 'MOTOR VEHICLE THEFT'];
-    const propertyCrimeCount = rawData.filter(i => i && propertyCrimeTypes.includes(i.offense)).length;
+    const propertyCrimeCount = filteredData.filter(i => i && propertyCrimeTypes.includes(i.offense)).length;
     const propertyCrimePercentage = totalIncidents > 0 ? ((propertyCrimeCount / totalIncidents) * 100).toFixed(1) : "0";
     
     return {
       topClusterName: formatClusterName(topCluster.neighborhood),
       topClusterCount: topCluster.total || 0,
-      topCrimeType: topCrimeEntry?.[0] || "Unknown",
-      topCrimeCount: topCrimeEntry?.[1] || 0,
+      topCrimeType: topCrimeEntry[0] || "Unknown",
+      topCrimeCount: topCrimeEntry[1] || 0,
       top5Percentage,
       propertyCrimePercentage
     };
-  }, [neighborhoodData, analysisData, rawData]);
+  }, [neighborhoodData, analysisData, rawData, filters]);
 
   return (
     <div className="space-y-5">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800">Crime Distribution by Neighborhood</h2>
         {neighborhoodData && neighborhoodData.length > 0 && (
           <div className="flex space-x-4">
             <div className="bg-blue-50 px-3 py-1 rounded-full text-sm flex items-center">
@@ -564,10 +594,10 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
             className="neighborhood-chart"
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-            <XAxis
+            <XAxis 
               type="number"
               tickFormatter={(value) => value.toLocaleString()}
-              label={{
+              label={{ 
                 value: 'Number of Incidents',
                 position: 'bottom',
                 offset: 5,
@@ -576,11 +606,11 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
               axisLine={{ stroke: '#e5e7eb' }}
               tickLine={{ stroke: '#e5e7eb' }}
             />
-            <YAxis
-              dataKey="neighborhood"
+            <YAxis 
+              dataKey="neighborhood" 
               type="category"
               width={110}
-              tick={{
+              tick={{ 
                 fill: '#374151',
                 fontSize: 13,
                 fontWeight: 500
@@ -597,7 +627,7 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
               cursor={{ fill: 'rgba(229, 231, 235, 0.4)' }}
               wrapperStyle={{ zIndex: 1000 }}
             />
-            <Legend
+            <Legend 
               layout="vertical"
               align="right"
               verticalAlign="middle"
@@ -654,43 +684,97 @@ const NeighborhoodAnalysis = ({ updateAreaAnalysis }) => {
       {/* Consolidated Crime and Demographic Insights Section */}
       {census && neighborhoodData.length > 0 && areaInsightsSummary && (
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <h3 className="text-lg font-semibold text-blue-800 mb-3">Area & Demographic Insights</h3>
+          <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+            <svg className="w-5 h-5 mr-2 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Area & Demographic Insights
+          </h3>
           
           {/* Area & Crime Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-            <div className="p-3 bg-white rounded-md border border-blue-50">
-              <p className="text-sm text-gray-800">
-                <span className="font-medium text-blue-800">{areaInsightsSummary.topClusterName}</span> recorded the highest number of incidents with{' '}
-                <span className="font-semibold text-blue-900">{areaInsightsSummary.topClusterCount.toLocaleString()}</span> total crimes
+            <div className="p-3 bg-white rounded-md border border-blue-50 hover:shadow-md transition-all duration-200">
+              <p className="text-sm text-gray-800 flex items-center">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 mr-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </span>
+                <span>
+                  <span className="font-medium text-blue-800">{areaInsightsSummary.topClusterName}</span>
+                  {" recorded the highest number of incidents with "}
+                  <span className="font-semibold text-blue-900">{areaInsightsSummary.topClusterCount.toLocaleString()}</span>
+                  {" total crimes"}
+                </span>
               </p>
             </div>
-            <div className="p-3 bg-white rounded-md border border-blue-50">
-              <p className="text-sm text-gray-800">
-                <span className="font-medium text-blue-800">{areaInsightsSummary.topCrimeType}</span> is the most frequent crime type with{' '}
-                <span className="font-semibold text-blue-900">{areaInsightsSummary.topCrimeCount.toLocaleString()}</span> incidents
+            <div className="p-3 bg-white rounded-md border border-blue-50 hover:shadow-md transition-all duration-200">
+              <p className="text-sm text-gray-800 flex items-center">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 mr-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </span>
+                <span>
+                  <span className="font-medium text-blue-800">{areaInsightsSummary.topCrimeType}</span>
+                  {" is the most frequent crime type with "}
+                  <span className="font-semibold text-blue-900">{areaInsightsSummary.topCrimeCount.toLocaleString()}</span>
+                  {" incidents"}
+                </span>
               </p>
             </div>
-            <div className="p-3 bg-white rounded-md border border-blue-50">
-              <p className="text-sm text-gray-800">
-                The top 5 neighborhoods account for <span className="font-semibold text-blue-900">{areaInsightsSummary.top5Percentage}%</span> of all reported incidents
+            <div className="p-3 bg-white rounded-md border border-blue-50 hover:shadow-md transition-all duration-200">
+              <p className="text-sm text-gray-800 flex items-center">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700 mr-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </span>
+                <span>
+                  {"The top 5 neighborhoods account for "}
+                  <span className="font-semibold text-blue-900">{areaInsightsSummary.top5Percentage}%</span>
+                  {" of all reported incidents"}
+                </span>
               </p>
             </div>
-            <div className="p-3 bg-white rounded-md border border-blue-50">
-              <p className="text-sm text-gray-800">
-                Property crimes make up <span className="font-semibold text-blue-900">{areaInsightsSummary.propertyCrimePercentage}%</span> of all incidents
+            <div className="p-3 bg-white rounded-md border border-blue-50 hover:shadow-md transition-all duration-200">
+              <p className="text-sm text-gray-800 flex items-center">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 mr-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </span>
+                <span>
+                  {"Property crimes make up "}
+                  <span className="font-semibold text-blue-900">{areaInsightsSummary.propertyCrimePercentage}%</span>
+                  {" of all incidents"}
+                </span>
               </p>
             </div>
           </div>
           
           {/* Demographic Table */}
           <div>
-            <h4 className="text-md font-medium text-blue-700 mb-2">Demographic Factors by Neighborhood</h4>
+            <h4 className="text-md font-medium text-blue-700 mb-2 flex items-center">
+              <svg className="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Demographic Factors by Neighborhood
+            </h4>
             <table className="w-full bg-white table-fixed">
               <thead className="bg-blue-100">
                 <tr>
                   <th className="py-2 px-4 text-left text-xs font-medium text-blue-800 uppercase tracking-wider w-1/5">Neighborhood</th>
                   <th className="py-2 px-4 text-left text-xs font-medium text-blue-800 uppercase tracking-wider w-1/5">Incidents</th>
-                  <th className="py-2 px-4 text-left text-xs font-medium text-blue-800 uppercase tracking-wider w-1/5">{selectedCensusMetric.charAt(0).toUpperCase() + selectedCensusMetric.slice(1)}</th>
+                  <th className="py-2 px-4 text-left text-xs font-medium text-blue-800 uppercase tracking-wider w-1/5 flex items-center">
+                    {selectedCensusMetric === 'income' && <span className="inline-block mr-1 text-green-600">💰</span>}
+                    {selectedCensusMetric === 'education' && <span className="inline-block mr-1 text-indigo-600">🎓</span>}
+                    {selectedCensusMetric === 'poverty' && <span className="inline-block mr-1 text-red-600">📉</span>}
+                    {selectedCensusMetric === 'housing' && <span className="inline-block mr-1 text-blue-600">🏘️</span>}
+                    {selectedCensusMetric === 'race' && <span className="inline-block mr-1 text-purple-600">👪</span>}
+                    {selectedCensusMetric.charAt(0).toUpperCase() + selectedCensusMetric.slice(1)}
+                  </th>
                   <th className="py-2 px-4 text-left text-xs font-medium text-blue-800 uppercase tracking-wider w-2/5">Correlation</th>
                 </tr>
               </thead>

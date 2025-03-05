@@ -383,10 +383,10 @@ const TemporalAnalysis = ({ updateTemporalPatterns }) => {
       const date = item.date;
       return {
         date,
-        incomePercentile: demographicShiftData.income[index].value,
-        educationRate: demographicShiftData.education[index].value,
-        povertyRate: demographicShiftData.poverty[index].value,
-        diversityIndex: demographicShiftData.diversity[index].value,
+        income: demographicShiftData.income[index].value,
+        education: demographicShiftData.education[index].value,
+        poverty: demographicShiftData.poverty[index].value,
+        diversity: demographicShiftData.diversity[index].value,
         crimeRate: demographicShiftData.crimeRate[index].value
       };
     });
@@ -433,425 +433,417 @@ const TemporalAnalysis = ({ updateTemporalPatterns }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Temporal Analysis</h2>
-          
-          {/* View Selector - Condense Time Patterns and Time Distribution tabs */}
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setSelectedView('trends')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedView === 'trends'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Daily Trends
-            </button>
-            <button
-              onClick={() => setSelectedView('patterns')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedView === 'patterns'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Time Patterns
-            </button>
-            <button
-              onClick={() => setSelectedView('demographics')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedView === 'demographics'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Demographic Shifts
-            </button>
+      <div className="flex justify-between items-center mb-6">
+        {/* View Selector - Condense Time Patterns and Time Distribution tabs */}
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setSelectedView('trends')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              selectedView === 'trends'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Daily Trends
+          </button>
+          <button
+            onClick={() => setSelectedView('patterns')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              selectedView === 'patterns'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Time Patterns
+          </button>
+          <button
+            onClick={() => setSelectedView('demographics')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              selectedView === 'demographics'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Demographic Shifts
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      {stats && selectedView === 'trends' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-blue-800">Daily Average</h3>
+            <p className="text-2xl font-semibold text-blue-900 mt-1">
+              {Math.round(stats.average)}
+            </p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-green-800">Total Incidents</h3>
+            <p className="text-2xl font-semibold text-green-900 mt-1">
+              {stats.total}
+            </p>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-purple-800">Peak Day</h3>
+            <p className="text-2xl font-semibold text-purple-900 mt-1">
+              {stats.maxDay ? format(new Date(stats.maxDay.date), 'MMM dd') : 'N/A'}
+            </p>
           </div>
         </div>
+      )}
 
-        {/* Stats Summary */}
-        {stats && selectedView === 'trends' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-blue-800">Daily Average</h3>
-              <p className="text-2xl font-semibold text-blue-900 mt-1">
-                {Math.round(stats.average)}
-              </p>
+      {/* Chart Area */}
+      <div className={selectedView === 'patterns' ? "h-auto" : "h-[400px]"}>
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center bg-gray-100">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          </div>
+        ) : error ? (
+          <div className="h-full flex items-center justify-center bg-gray-100">
+            <div className="text-center p-6">
+              <p className="text-red-500">{error}</p>
             </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-green-800">Total Incidents</h3>
-              <p className="text-2xl font-semibold text-green-900 mt-1">
-                {stats.total}
-              </p>
+          </div>
+        ) : selectedView === 'trends' && (!chartData || chartData.heatMapData.length === 0) ? (
+          <EmptyState />
+        ) : selectedView === 'trends' && (
+          <ResponsiveContainer>
+            <LineChart
+              data={filteredChartData}
+              margin={{ top: 10, right: 30, left: 20, bottom: 25 }}
+            >
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="#f0f0f0"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(date) => format(new Date(date), 'MMM dd')}
+                tick={{ fill: '#666', fontSize: 12 }}
+                interval="preserveStartEnd"
+                minTickGap={30}
+                padding={{ left: 10, right: 10 }}
+              />
+              <YAxis 
+                tick={{ fill: '#666', fontSize: 12 }}
+                tickFormatter={(value) => value.toLocaleString()}
+                domain={['auto', 'auto']}
+                padding={{ top: 20, bottom: 20 }}
+              />
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="bg-white p-4 border border-gray-200 shadow-lg rounded">
+                        <p className="font-semibold text-gray-800 mb-2">
+                          {format(new Date(label), 'MMMM d, yyyy')}
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-gray-600">Total Crimes: </span>
+                          <span className="font-medium">{payload[0].value.toLocaleString()}</span>
+                        </p>
+                        {stats && (
+                          <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                            {payload[0].value > stats.average ? (
+                              <p>↑ {((payload[0].value / stats.average - 1) * 100).toFixed(1)}% above average</p>
+                            ) : (
+                              <p>↓ {((1 - payload[0].value / stats.average) * 100).toFixed(1)}% below average</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="crimes"
+                name="Total Crimes"
+                stroke="#6366f1"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ 
+                  r: 6, 
+                  stroke: '#6366f1',
+                  strokeWidth: 2,
+                  fill: '#ffffff'
+                }}
+              />
+              {/* Add moving average line for trend */}
+              <Line
+                type="monotone"
+                dataKey="movingAverage"
+                name="7-day Average"
+                stroke="#94a3b8"
+                strokeWidth={1.5}
+                strokeDasharray="5 5"
+                dot={false}
+                activeDot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+
+        {selectedView === 'patterns' && (
+          <div className="space-y-6">
+            {/* Unified Time Patterns Chart */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-800 mb-4">Crime Activity by Time of Day</h3>
+              <div className="h-[400px]">
+                <ResponsiveContainer>
+                  <BarChart
+                    data={combinedTimeData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fill: '#666', fontSize: 12 }}
+                    />
+                    <YAxis
+                      tick={{ fill: '#666' }}
+                      label={{ value: 'Number of Incidents', angle: -90, position: 'insideLeft' }}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-white p-4 border border-gray-200 shadow-lg rounded">
+                              <div className="flex items-center mb-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full mr-2" 
+                                  style={{ backgroundColor: TIME_COLORS[data.shift] }}
+                                ></div>
+                                <p className="font-semibold">{data.label}</p>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-sm flex justify-between">
+                                  <span className="text-gray-600">Incidents:</span>
+                                  <span className="font-medium ml-4">{data.count.toLocaleString()}</span>
+                                </p>
+                                <p className="text-sm flex justify-between">
+                                  <span className="text-gray-600">Percentage:</span>
+                                  <span className="font-medium ml-4">{data.percentage}%</span>
+                                </p>
+                                <p className="text-sm flex justify-between">
+                                  <span className="text-gray-600">Shift Period:</span>
+                                  <span className="font-medium ml-4">{data.shift}</span>
+                                </p>
+                                <p className="text-sm flex justify-between">
+                                  <span className="text-gray-600">Risk Weight:</span>
+                                  <span className="font-medium ml-4">{data.risk}×</span>
+                                </p>
+                              </div>
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <p className="text-xs text-gray-500 flex items-center">
+                                  <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
+                                    data.activityLevel === 'High' ? 'bg-red-500' :
+                                    data.activityLevel === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                                  }`}></span>
+                                  {data.activityLevel} activity period
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Legend 
+                      content={() => (
+                        <div className="flex justify-center items-center gap-6 mt-2">
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 rounded-sm bg-green-500 mr-1"></div>
+                            <span className="text-sm text-gray-600">Day (8:00-16:00)</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 rounded-sm bg-blue-500 mr-1"></div>
+                            <span className="text-sm text-gray-600">Evening (16:00-24:00)</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 rounded-sm bg-purple-700 mr-1"></div>
+                            <span className="text-sm text-gray-600">Midnight (0:00-8:00)</span>
+                          </div>
+                        </div>
+                      )}
+                    />
+                    <Bar
+                      dataKey="count"
+                      name="Incident Count"
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {combinedTimeData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={TIME_COLORS[entry.shift]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-purple-800">Peak Day</h3>
-              <p className="text-2xl font-semibold text-purple-900 mt-1">
-                {stats.maxDay ? format(new Date(stats.maxDay.date), 'MMM dd') : 'N/A'}
+            
+            {/* Key insights section */}
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <h3 className="text-md font-medium text-blue-800 mb-2">Key Time Pattern Insights</h3>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                {timePatterns._temporalData && (
+                  <>
+                    <li>Peak crime activity occurs between <span className="font-medium">{timePatterns._temporalData.peakTimeRange}</span> ({timePatterns._temporalData.peakTimePercentage}% of incidents)</li>
+                    <li>Weekend crime rates are <span className="font-medium">{timePatterns._temporalData.weekendDifference}%</span> {Number(timePatterns._temporalData.weekendDifference) > 0 ? 'higher' : 'lower'} than weekday averages</li>
+                    <li><span className="font-medium">{timePatterns._temporalData.nightViolentCrimePercentage}%</span> of violent crimes occur during nighttime hours (8PM-6AM)</li>
+                    <li>Crime risk is weighted higher during <span className="font-medium text-purple-700">Midnight</span> ({TIME_WEIGHTS.MIDNIGHT}×) and <span className="font-medium text-blue-600">Evening</span> ({TIME_WEIGHTS.EVENING}×) hours</li>
+                  </>
+                )}
+              </ul>
+              <p className="text-xs text-gray-500 mt-3">
+                This visualization uses 4-hour time blocks color-coded by shift period (Day, Evening, Midnight) to show crime activity patterns. Risk weights reflect the potentially heightened severity of crimes during evening and nighttime hours.
               </p>
             </div>
           </div>
         )}
 
-        {/* Chart Area */}
-        <div className={selectedView === 'patterns' ? "h-auto" : "h-[400px]"}>
-          {selectedView === 'trends' && (
-            <ResponsiveContainer>
-              <LineChart
-                data={filteredChartData}
-                margin={{ top: 10, right: 30, left: 20, bottom: 25 }}
-              >
-                <CartesianGrid 
-                  strokeDasharray="3 3" 
-                  stroke="#f0f0f0"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(date) => format(new Date(date), 'MMM dd')}
-                  tick={{ fill: '#666', fontSize: 12 }}
-                  interval="preserveStartEnd"
-                  minTickGap={30}
-                  padding={{ left: 10, right: 10 }}
-                />
-                <YAxis 
-                  tick={{ fill: '#666', fontSize: 12 }}
-                  tickFormatter={(value) => value.toLocaleString()}
-                  domain={['auto', 'auto']}
-                  padding={{ top: 20, bottom: 20 }}
-                />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-4 border border-gray-200 shadow-lg rounded">
-                          <p className="font-semibold text-gray-800 mb-2">
-                            {format(new Date(label), 'MMMM d, yyyy')}
+        {selectedView === 'demographics' && mergedDemographicData.length > 0 && (
+          <ResponsiveContainer>
+            <LineChart
+              data={mergedDemographicData}
+              margin={{ top: 10, right: 30, left: 20, bottom: 25 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(date) => format(new Date(date), 'MMM yyyy')}
+                tick={{ fill: '#666', fontSize: 12 }}
+                interval="preserveStartEnd"
+              />
+              <YAxis 
+                yAxisId="left"
+                tick={{ fill: '#666', fontSize: 12 }}
+                domain={[0, 100]}
+                label={{ value: 'Demographic Rate (%)', angle: -90, position: 'insideLeft' }}
+              />
+              <YAxis 
+                yAxisId="right" 
+                orientation="right"
+                tick={{ fill: '#666', fontSize: 12 }}
+                domain={[0, 'dataMax + 20']}
+                label={{ value: 'Crime Incidents', angle: 90, position: 'insideRight' }}
+              />
+              <Tooltip 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="bg-white p-4 border border-gray-200 shadow-lg rounded">
+                        <p className="font-semibold text-gray-800 mb-2">
+                          {format(new Date(label), 'MMMM yyyy')}
+                        </p>
+                        <div className="space-y-1">
+                          <p className="text-sm flex justify-between">
+                            <span className="text-green-600 font-medium">Income:</span>
+                            <span className="ml-4">{payload[0].value.toFixed(1)}%</span>
                           </p>
-                          <p className="text-sm">
-                            <span className="text-gray-600">Total Crimes: </span>
-                            <span className="font-medium">{payload[0].value.toLocaleString()}</span>
+                          <p className="text-sm flex justify-between">
+                            <span className="text-indigo-600 font-medium">Education:</span>
+                            <span className="ml-4">{payload[1].value.toFixed(1)}%</span>
                           </p>
-                          {stats && (
-                            <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
-                              {payload[0].value > stats.average ? (
-                                <p>↑ {((payload[0].value / stats.average - 1) * 100).toFixed(1)}% above average</p>
-                              ) : (
-                                <p>↓ {((1 - payload[0].value / stats.average) * 100).toFixed(1)}% below average</p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="crimes"
-                  name="Total Crimes"
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ 
-                    r: 6, 
-                    stroke: '#6366f1',
-                    strokeWidth: 2,
-                    fill: '#ffffff'
-                  }}
-                />
-                {/* Add moving average line for trend */}
-                <Line
-                  type="monotone"
-                  dataKey="movingAverage"
-                  name="7-day Average"
-                  stroke="#94a3b8"
-                  strokeWidth={1.5}
-                  strokeDasharray="5 5"
-                  dot={false}
-                  activeDot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-
-          {selectedView === 'patterns' && (
-            <div className="space-y-6">
-              {/* Unified Time Patterns Chart */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Crime Activity by Time of Day</h3>
-                <div className="h-[400px]">
-                  <ResponsiveContainer>
-                    <BarChart
-                      data={combinedTimeData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis
-                        dataKey="label"
-                        tick={{ fill: '#666', fontSize: 12 }}
-                      />
-                      <YAxis
-                        tick={{ fill: '#666' }}
-                        label={{ value: 'Number of Incidents', angle: -90, position: 'insideLeft' }}
-                      />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            const data = payload[0].payload;
-                            return (
-                              <div className="bg-white p-4 border border-gray-200 shadow-lg rounded">
-                                <div className="flex items-center mb-2">
-                                  <div 
-                                    className="w-3 h-3 rounded-full mr-2" 
-                                    style={{ backgroundColor: TIME_COLORS[data.shift] }}
-                                  ></div>
-                                  <p className="font-semibold">{data.label}</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-sm flex justify-between">
-                                    <span className="text-gray-600">Incidents:</span>
-                                    <span className="font-medium ml-4">{data.count.toLocaleString()}</span>
-                                  </p>
-                                  <p className="text-sm flex justify-between">
-                                    <span className="text-gray-600">Percentage:</span>
-                                    <span className="font-medium ml-4">{data.percentage}%</span>
-                                  </p>
-                                  <p className="text-sm flex justify-between">
-                                    <span className="text-gray-600">Shift Period:</span>
-                                    <span className="font-medium ml-4">{data.shift}</span>
-                                  </p>
-                                  <p className="text-sm flex justify-between">
-                                    <span className="text-gray-600">Risk Weight:</span>
-                                    <span className="font-medium ml-4">{data.risk}×</span>
-                                  </p>
-                                </div>
-                                <div className="mt-2 pt-2 border-t border-gray-100">
-                                  <p className="text-xs text-gray-500 flex items-center">
-                                    <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
-                                      data.activityLevel === 'High' ? 'bg-red-500' :
-                                      data.activityLevel === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
-                                    }`}></span>
-                                    {data.activityLevel} activity period
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Legend 
-                        content={() => (
-                          <div className="flex justify-center items-center gap-6 mt-2">
-                            <div className="flex items-center">
-                              <div className="w-4 h-4 rounded-sm bg-green-500 mr-1"></div>
-                              <span className="text-sm text-gray-600">Day (8:00-16:00)</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-4 h-4 rounded-sm bg-blue-500 mr-1"></div>
-                              <span className="text-sm text-gray-600">Evening (16:00-24:00)</span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-4 h-4 rounded-sm bg-purple-700 mr-1"></div>
-                              <span className="text-sm text-gray-600">Midnight (0:00-8:00)</span>
-                            </div>
-                          </div>
-                        )}
-                      />
-                      <Bar
-                        dataKey="count"
-                        name="Incident Count"
-                        radius={[4, 4, 0, 0]}
-                      >
-                        {combinedTimeData.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={TIME_COLORS[entry.shift]}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              
-              {/* Key insights section */}
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-md font-medium text-blue-800 mb-2">Key Time Pattern Insights</h3>
-                <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-                  {timePatterns._temporalData && (
-                    <>
-                      <li>Peak crime activity occurs between <span className="font-medium">{timePatterns._temporalData.peakTimeRange}</span> ({timePatterns._temporalData.peakTimePercentage}% of incidents)</li>
-                      <li>Weekend crime rates are <span className="font-medium">{timePatterns._temporalData.weekendDifference}%</span> {Number(timePatterns._temporalData.weekendDifference) > 0 ? 'higher' : 'lower'} than weekday averages</li>
-                      <li><span className="font-medium">{timePatterns._temporalData.nightViolentCrimePercentage}%</span> of violent crimes occur during nighttime hours (8PM-6AM)</li>
-                      <li>Crime risk is weighted higher during <span className="font-medium text-purple-700">Midnight</span> ({TIME_WEIGHTS.MIDNIGHT}×) and <span className="font-medium text-blue-600">Evening</span> ({TIME_WEIGHTS.EVENING}×) hours</li>
-                    </>
-                  )}
-                </ul>
-                <p className="text-xs text-gray-500 mt-3">
-                  Risk weights reflect the potentially heightened severity and impact of crimes that occur during evening and nighttime hours.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {selectedView === 'demographics' && mergedDemographicData.length > 0 && (
-            <ResponsiveContainer>
-              <LineChart
-                data={mergedDemographicData}
-                margin={{ top: 10, right: 30, left: 20, bottom: 25 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(date) => format(new Date(date), 'MMM yyyy')}
-                  tick={{ fill: '#666', fontSize: 12 }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis 
-                  yAxisId="left"
-                  tick={{ fill: '#666', fontSize: 12 }}
-                  domain={[0, 100]}
-                  label={{ value: 'Demographic Rate (%)', angle: -90, position: 'insideLeft' }}
-                />
-                <YAxis 
-                  yAxisId="right"
-                  orientation="right"
-                  tick={{ fill: '#666', fontSize: 12 }}
-                  label={{ value: 'Crime Rate', angle: 90, position: 'insideRight' }}
-                  domain={['auto', 'auto']}
-                />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-4 border border-gray-200 shadow-lg rounded">
-                          <p className="font-semibold text-gray-800 mb-2">
-                            {format(new Date(label), 'MMMM yyyy')}
+                          <p className="text-sm flex justify-between">
+                            <span className="text-red-600 font-medium">Poverty:</span>
+                            <span className="ml-4">{payload[2].value.toFixed(1)}%</span>
                           </p>
-                          <div className="space-y-1">
-                            <p className="text-sm flex items-center">
-                              <span className="w-3 h-3 inline-block bg-blue-500 rounded-full mr-2"></span>
-                              <span className="text-gray-600">Income Percentile: </span>
-                              <span className="font-medium ml-1">{payload[0].value.toFixed(1)}%</span>
-                            </p>
-                            <p className="text-sm flex items-center">
-                              <span className="w-3 h-3 inline-block bg-purple-500 rounded-full mr-2"></span>
-                              <span className="text-gray-600">Education Rate: </span>
-                              <span className="font-medium ml-1">{payload[1].value.toFixed(1)}%</span>
-                            </p>
-                            <p className="text-sm flex items-center">
-                              <span className="w-3 h-3 inline-block bg-red-500 rounded-full mr-2"></span>
-                              <span className="text-gray-600">Poverty Rate: </span>
-                              <span className="font-medium ml-1">{payload[2].value.toFixed(1)}%</span>
-                            </p>
-                            <p className="text-sm flex items-center">
-                              <span className="w-3 h-3 inline-block bg-green-500 rounded-full mr-2"></span>
-                              <span className="text-gray-600">Diversity Index: </span>
-                              <span className="font-medium ml-1">{payload[3].value.toFixed(1)}%</span>
-                            </p>
-                            <p className="text-sm flex items-center mt-2 pt-2 border-t border-gray-100">
-                              <span className="w-3 h-3 inline-block bg-gray-500 rounded-full mr-2"></span>
-                              <span className="text-gray-600">Crime Rate: </span>
-                              <span className="font-medium ml-1">{payload[4].value.toFixed(0)}</span>
+                          <p className="text-sm flex justify-between">
+                            <span className="text-purple-600 font-medium">Diversity:</span>
+                            <span className="ml-4">{payload[3].value.toFixed(1)}%</span>
+                          </p>
+                          <div className="pt-2 mt-2 border-t border-gray-100">
+                            <p className="text-sm flex justify-between">
+                              <span className="text-blue-600 font-medium">Crime Rate:</span>
+                              <span className="ml-4">{Math.round(payload[4].value)} incidents</span>
                             </p>
                           </div>
                         </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="incomePercentile"
-                  name="Income Percentile"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  yAxisId="left"
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="educationRate"
-                  name="Education Rate"
-                  stroke="#8b5cf6"
-                  strokeWidth={2}
-                  yAxisId="left"
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="povertyRate"
-                  name="Poverty Rate"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  yAxisId="left"
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="diversityIndex"
-                  name="Diversity Index"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  yAxisId="left"
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="crimeRate"
-                  name="Crime Rate"
-                  stroke="#6b7280"
-                  strokeWidth={2.5}
-                  strokeDasharray="5 5"
-                  yAxisId="right"
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-                
-                {/* Add correlation lines */}
-                <ReferenceLine
-                  y={50}
-                  stroke="#9ca3af"
-                  strokeDasharray="3 3"
-                  yAxisId="left"
-                  label={{
-                    value: 'Baseline',
-                    position: 'insideBottomRight',
-                    fill: '#6b7280',
-                    fontSize: 10,
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Legend
+                layout="horizontal"
+                verticalAlign="top"
+                align="center"
+                wrapperStyle={{ paddingBottom: 20 }}
+                iconType="circle"
+                iconSize={10}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="income"
+                name="Income"
+                stroke="#10b981"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="education"
+                name="Education"
+                stroke="#6366f1"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="poverty"
+                name="Poverty"
+                stroke="#ef4444"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="diversity"
+                name="Diversity"
+                stroke="#8b5cf6"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="crimeRate"
+                name="Crime Rate"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={false}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
 
-        {/* View-specific explanations */}
+      {/* View-specific explanations - only render for trends and demographics */}
+      {selectedView !== 'patterns' && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           {selectedView === 'trends' && (
             <p className="text-gray-700">
               This chart shows the daily crime incidents over time. Use the filters above to focus on specific time periods.
               The line chart helps identify trends and patterns in crime frequency across days.
-            </p>
-          )}
-          {selectedView === 'patterns' && (
-            <p className="text-gray-700">
-              This visualization combines detailed 4-hour time blocks with shift period color-coding to show when
-              crime activity typically occurs throughout the day. The bars are colored by shift category 
-              (Day, Evening, Midnight) with risk weights applied to reflect the potentially increased severity
-              of crimes during certain hours.
             </p>
           )}
           {selectedView === 'demographics' && (
@@ -860,10 +852,22 @@ const TemporalAnalysis = ({ updateTemporalPatterns }) => {
                 This visualization shows how demographic factors have shifted over time alongside crime trends. The chart highlights correlations between:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                <li><span className="font-medium text-blue-600">Income</span> - Higher incomes typically correlate with lower crime rates (negative correlation -0.65)</li>
-                <li><span className="font-medium text-purple-600">Education</span> - Higher education levels correlate with lower crime rates (negative correlation -0.48)</li>
-                <li><span className="font-medium text-red-600">Poverty</span> - Higher poverty rates correlate with higher crime rates (positive correlation 0.72)</li>
-                <li><span className="font-medium text-green-600">Diversity</span> - The diversity index shows more complex relationships with crime patterns</li>
+                <li className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600 mr-2">💰</span>
+                  <span><span className="font-medium text-green-600">Income</span> - Higher incomes typically correlate with lower crime rates (negative correlation -0.65)</span>
+                </li>
+                <li className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 mr-2">🎓</span>
+                  <span><span className="font-medium text-indigo-600">Education</span> - Higher education levels correlate with lower crime rates (negative correlation -0.48)</span>
+                </li>
+                <li className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600 mr-2">📉</span>
+                  <span><span className="font-medium text-red-600">Poverty</span> - Higher poverty rates correlate with higher crime rates (positive correlation 0.72)</span>
+                </li>
+                <li className="flex items-center">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 text-purple-600 mr-2">👪</span>
+                  <span><span className="font-medium text-purple-600">Diversity</span> - The diversity index shows more complex relationships with crime patterns</span>
+                </li>
               </ul>
               <p className="text-gray-500 text-sm mt-2 italic">
                 Note: Demographic data is generated from baseline census statistics and correlated with crime patterns to show likely trends over time. For actual historical demographic data, additional census datasets would be required.
@@ -871,7 +875,7 @@ const TemporalAnalysis = ({ updateTemporalPatterns }) => {
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

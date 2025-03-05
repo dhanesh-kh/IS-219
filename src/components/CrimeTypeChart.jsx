@@ -34,8 +34,9 @@ const CRIME_WEIGHTS = {
 
 const CrimeTypeChart = () => {
   const { crimeTypes, rawData, census, showCensusOverlay, selectedCensusMetric } = useCrimeData();
-  const [sortBy, setSortBy] = useState('count'); // 'count', 'alphabetical', or 'severity'
-  const [chartOrientation, setChartOrientation] = useState('vertical'); // 'vertical' or 'horizontal'
+  // Always sort by count (frequency) since the UI element has been removed
+  const [sortBy] = useState('count'); 
+  const [chartOrientation, setChartOrientation] = useState('horizontal'); // 'vertical' or 'horizontal'
   
   // Enhanced debug logging only in development
   useEffect(() => {
@@ -256,8 +257,8 @@ const CustomTooltip = ({ active, payload }) => {
                   `Lower ${selectedCensusMetric} areas tend to have more ${data.formattedOffense.toLowerCase()} incidents` :
                   `No clear relationship between ${selectedCensusMetric} and ${data.formattedOffense.toLowerCase()}`
                 }
-              </p>
-            </div>
+          </p>
+        </div>
           )}
       </div>
     );
@@ -267,204 +268,188 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-      <div className="flex flex-wrap justify-between items-center p-4 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-800">Crime Type Distribution</h2>
-        <div className="flex flex-wrap items-center gap-3 mt-2 sm:mt-0">
-          <div className="flex items-center bg-gray-50 border border-gray-200 rounded-md">
-            <button
+    <>
+      <div className="flex flex-wrap justify-between items-center mb-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center">
+            <button 
+              className={`p-1 mr-2 rounded ${chartOrientation === 'vertical' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setChartOrientation('vertical')}
-              className={`px-2 py-1 text-xs ${chartOrientation === 'vertical' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600'}`}
-              title="Show as vertical bars"
+              title="Vertical bars"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v10M12 4v13M16 10v7M20 7v10" />
               </svg>
             </button>
-            <button
+            <button 
+              className={`p-1 rounded ${chartOrientation === 'horizontal' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setChartOrientation('horizontal')}
-              className={`px-2 py-1 text-xs ${chartOrientation === 'horizontal' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600'}`}
-              title="Show as horizontal bars"
+              title="Horizontal bars"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
               </svg>
             </button>
           </div>
-          
-          <div className="flex items-center">
-            <span className="text-xs text-gray-600 mr-2">Sort by:</span>
-            <select
-              className="border border-gray-200 rounded-md px-2 py-1 text-sm bg-white"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="count">Frequency</option>
-              <option value="alphabetical">Alphabetical</option>
-              <option value="severity">Severity</option>
-            </select>
-          </div>
         </div>
       </div>
 
-      <div className="p-4">
-        {(!chartData || chartData.length === 0) ? (
-          <div className="h-[400px] flex items-center justify-center bg-gray-50 rounded-lg">
-            <div className="text-center p-6">
-              <svg className="w-12 h-12 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-              </svg>
-              <h3 className="mt-2 text-base font-medium text-gray-700">No Crime Data Available</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Try adjusting your filters to see crime type distribution.
+      {(!chartData || chartData.length === 0) ? (
+        <div className="h-[400px] flex items-center justify-center bg-gray-50 rounded-lg">
+          <div className="text-center p-6">
+            <svg className="w-12 h-12 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <h3 className="mt-2 text-base font-medium text-gray-700">No Crime Data Available</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Try adjusting your filters to see crime type distribution.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <ResponsiveContainer width="100%" height={450}>
+            {chartOrientation === 'vertical' ? (
+              <BarChart
+                data={chartData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 70
+                }}
+                barSize={chartData.length > 6 ? 40 : 60}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="formattedOffense"
+                  angle={-35}
+                  textAnchor="end"
+                  height={80}
+                  tick={{ fontSize: 11, fill: '#4b5563' }}
+                  tickMargin={10}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#4b5563' }}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                  tickLine={{ stroke: '#e5e7eb' }}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(224, 231, 255, 0.2)' }} />
+                {/* Legend removed as requested */}
+                
+                {/* Define gradient for correlation background */}
+                <defs>
+                  <linearGradient id="correlationGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.1} />
+                    <stop offset="50%" stopColor="#ffffff" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                
+                <Bar
+                  dataKey="count"
+                  radius={[4, 4, 0, 0]}
+                  fill={showCensusOverlay ? "#6366f1" : "#3b82f6"}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={showCensusOverlay ? "#6366f1" : CRIME_COLORS[entry.offense] || CRIME_COLORS.default}
+                      stroke={showCensusOverlay ? getCorrelationColor(entry.correlation) : undefined}
+                      strokeWidth={showCensusOverlay ? 2 : 0}
+                    />
+                  ))}
+                </Bar>
+                
+                {/* Add correlation reference line when overlay is active */}
+                {showCensusOverlay && (
+                  <ReferenceLine
+                    y={0}
+                    stroke="#9ca3af"
+                    strokeDasharray="3 3" 
+                    isFront={true}
+                  />
+                )}
+              </BarChart>
+            ) : (
+              <BarChart
+                data={chartData}
+                layout="vertical"
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 150,
+                  bottom: 20
+                }}
+                barSize={20}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 11, fill: '#4b5563' }}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                  tickLine={{ stroke: '#e5e7eb' }}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="formattedOffense"
+                  tick={{ fontSize: 11, fill: '#4b5563' }}
+                  width={140}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                  tickLine={{ stroke: '#e5e7eb' }}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(224, 231, 255, 0.2)' }} />
+                {/* Legend removed as requested */}
+                
+                <Bar
+                  dataKey="count"
+                  radius={[0, 4, 4, 0]}
+                  fill={showCensusOverlay ? "#6366f1" : "#3b82f6"}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`}
+                      fill={showCensusOverlay ? "#6366f1" : CRIME_COLORS[entry.offense] || CRIME_COLORS.default}
+                      stroke={showCensusOverlay ? getCorrelationColor(entry.correlation) : undefined}
+                      strokeWidth={showCensusOverlay ? 2 : 0}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            )}
+          </ResponsiveContainer>
+          
+          {/* Legend for correlation colors when overlay is enabled */}
+          {showCensusOverlay && (
+            <div className="mt-2 pt-3 border-t border-gray-200">
+              <p className="text-xs font-medium text-gray-700 mb-2">
+                Correlation with {selectedCensusMetric.charAt(0).toUpperCase() + selectedCensusMetric.slice(1)}:
+              </p>
+              <div className="flex items-center justify-center space-x-6 text-xs">
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full bg-red-500 mr-1"></span>
+                  <span>Strong Positive</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full bg-gray-400 mr-1"></span>
+                  <span>No Correlation</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
+                  <span>Strong Negative</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                {selectedCensusMetric === 'poverty' ?
+                  'Positive correlation means crime is more common in higher poverty areas' :
+                  'Negative correlation means crime is more common in lower ' + selectedCensusMetric + ' areas'}
               </p>
             </div>
-          </div>
-        ) : (
-          <>
-            <ResponsiveContainer width="100%" height={450}>
-              {chartOrientation === 'vertical' ? (
-                <BarChart
-                  data={chartData}
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 20,
-                    bottom: 70
-                  }}
-                  barSize={chartData.length > 6 ? 40 : 60}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="formattedOffense"
-                    angle={-35}
-                    textAnchor="end"
-                    height={80}
-                    tick={{ fontSize: 11, fill: '#4b5563' }}
-                    tickMargin={10}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: '#4b5563' }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                    tickLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(224, 231, 255, 0.2)' }} />
-                  {/* Legend removed as requested */}
-                  
-                  {/* Define gradient for correlation background */}
-                  <defs>
-                    <linearGradient id="correlationGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#ef4444" stopOpacity={0.1} />
-                      <stop offset="50%" stopColor="#ffffff" stopOpacity={0.1} />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  
-                  <Bar
-                    dataKey="count"
-                    radius={[4, 4, 0, 0]}
-                    fill={showCensusOverlay ? "#6366f1" : "#3b82f6"}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={showCensusOverlay ? "#6366f1" : CRIME_COLORS[entry.offense] || CRIME_COLORS.default}
-                        stroke={showCensusOverlay ? getCorrelationColor(entry.correlation) : undefined}
-                        strokeWidth={showCensusOverlay ? 2 : 0}
-                      />
-                    ))}
-                  </Bar>
-                  
-                  {/* Add correlation reference line when overlay is active */}
-                  {showCensusOverlay && (
-                    <ReferenceLine
-                      y={0}
-                      stroke="#9ca3af"
-                strokeDasharray="3 3" 
-                      isFront={true}
-                    />
-                  )}
-                </BarChart>
-              ) : (
-                <BarChart
-                  data={chartData}
-                  layout="vertical"
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 150,
-                    bottom: 20
-                  }}
-                  barSize={20}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-              <XAxis
-                type="number"
-                    tick={{ fontSize: 11, fill: '#4b5563' }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                    tickLine={{ stroke: '#e5e7eb' }}
-              />
-              <YAxis
-                type="category"
-                    dataKey="formattedOffense"
-                    tick={{ fontSize: 11, fill: '#4b5563' }}
-                    width={140}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                    tickLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(224, 231, 255, 0.2)' }} />
-                  {/* Legend removed as requested */}
-                  
-              <Bar
-                dataKey="count"
-                radius={[0, 4, 4, 0]}
-                    fill={showCensusOverlay ? "#6366f1" : "#3b82f6"}
-              >
-                    {chartData.map((entry, index) => (
-                  <Cell 
-                        key={`cell-${index}`}
-                        fill={showCensusOverlay ? "#6366f1" : CRIME_COLORS[entry.offense] || CRIME_COLORS.default}
-                        stroke={showCensusOverlay ? getCorrelationColor(entry.correlation) : undefined}
-                        strokeWidth={showCensusOverlay ? 2 : 0}
-                  />
-                ))}
-              </Bar>
-                </BarChart>
-              )}
-          </ResponsiveContainer>
-            
-            {/* Legend for correlation colors when overlay is enabled */}
-            {showCensusOverlay && (
-              <div className="mt-2 pt-3 border-t border-gray-200">
-                <p className="text-xs font-medium text-gray-700 mb-2">
-                  Correlation with {selectedCensusMetric.charAt(0).toUpperCase() + selectedCensusMetric.slice(1)}:
-                </p>
-                <div className="flex items-center justify-center space-x-6 text-xs">
-                  <div className="flex items-center">
-                    <span className="w-3 h-3 rounded-full bg-red-500 mr-1"></span>
-                    <span>Strong Positive</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="w-3 h-3 rounded-full bg-gray-400 mr-1"></span>
-                    <span>No Correlation</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
-                    <span>Strong Negative</span>
-                  </div>
-        </div>
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  {selectedCensusMetric === 'poverty' ?
-                    'Positive correlation means crime is more common in higher poverty areas' :
-                    'Negative correlation means crime is more common in lower ' + selectedCensusMetric + ' areas'}
-                </p>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+          )}
+        </>
+      )}
+    </>
   );
 };
 
