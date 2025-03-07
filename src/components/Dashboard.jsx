@@ -234,9 +234,11 @@ const Dashboard = () => {
               
               {/* Filters Section - directly connected to header, no gap */}
               <div className="bg-white" ref={filtersRef}>
+                {/* Temporarily hidden filters
                 <LazyChartComponent>
                   <Filters />
                 </LazyChartComponent>
+                */}
               </div>
             </div>
           </div>
@@ -270,7 +272,7 @@ const Dashboard = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-800">Demographic Insights</h2>
+                <h2 className="text-lg font-bold text-gray-800">Washington DC Demographics</h2>
                 <p className="text-gray-500 text-xs">Census data integration with crime patterns</p>
               </div>
             </div>
@@ -280,17 +282,6 @@ const Dashboard = () => {
               {/* DC Demographics Key Metrics Section */}
               {census ? (
                 <div className="rounded-lg overflow-hidden border border-blue-100">
-                  <div className="bg-blue-50 p-3 border-b border-blue-100">
-                    <div className="flex items-center">
-                      {/* Changed from bar graph to clipboard chart icon */}
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6" />
-                      </svg>
-                      <h3 className="text-base font-semibold text-gray-800">Washington DC Demographics - Key Metrics</h3>
-                    </div>
-                  </div>
-                  
                   <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-blue-100">
                     {/* Higher Education */}
                     <div className="bg-white p-4 flex flex-col items-center text-center">
@@ -375,125 +366,126 @@ const Dashboard = () => {
               )}
               
               {/* Crime and Demographic Correlations - Unified visual style */}
-              <div className="rounded-lg overflow-hidden border border-slate-200">
-                <div className="bg-slate-50 p-3 border-b border-slate-200">
-                  <div className="flex items-center">
-                    {/* Changed from line graph to network/correlation icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-700 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                    <h3 className="text-base font-semibold text-gray-800">Crime and Demographic Correlations</h3>
-                  </div>
-                </div>
-                
-                <div className="p-3 bg-white">
-                  <div className="mb-3 rounded-lg py-2 px-3 border-l-3 border-slate-300 bg-slate-50">
-                    <p className="text-gray-700 text-xs">
-                      Key correlations between 2023 census data and 2024 crime incidents:
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Income Correlation Card */}
-                    <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                      <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
-                        <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <h4 className="font-semibold text-gray-800 text-md">Income Correlation</h4>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-baseline mb-2">
-                          <span className="text-2xl font-bold text-green-600 mr-2">2.3x</span>
-                          <span className="text-sm text-gray-500">higher crime rate</span>
-                        </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          Areas with median household income below $85,000 show higher violent crime rates compared to areas with income above $125,000.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Education Impact Card */}
-                    <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                      <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
-                        <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                          </svg>
-                        </div>
-                        <h4 className="font-semibold text-gray-800 text-md">Education Impact</h4>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-baseline mb-2">
-                          <span className="text-2xl font-bold text-blue-600 mr-2">40%</span>
-                          <span className="text-sm text-gray-500">fewer violent crimes</span>
-                        </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          Neighborhoods with higher education rates (75%+ with Bachelor's degrees) experience fewer violent crimes but similar property crime rates.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Housing Value Patterns Card */}
-                    <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                      <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white">
-                        <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                          </svg>
-                        </div>
-                        <h4 className="font-semibold text-gray-800 text-md">Housing Value Patterns</h4>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-baseline mb-2">
-                          <span className="text-2xl font-bold text-indigo-600 mr-2">$750,000+</span>
-                          <span className="text-sm text-gray-500">housing values</span>
-                        </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          Areas with higher housing values show different crime patterns: higher rates of theft but lower violent crime.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Poverty Impact Card */}
-                    <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                      <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-red-50 to-white">
-                        <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                          </svg>
-                        </div>
-                        <h4 className="font-semibold text-gray-800 text-md">Poverty Impact</h4>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-baseline mb-2">
-                          <span className="text-2xl font-bold text-red-600 mr-2">2.8x</span>
-                          <span className="text-sm text-gray-500">more violent crime</span>
-                        </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          High poverty areas ({">"} 17%) experience more violent crime incidents than areas with poverty rates below 7%.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-3 py-2 px-3 rounded border border-amber-200 bg-amber-50 text-xs">
+              {census && (
+                <div className="rounded-lg overflow-hidden border border-slate-200">
+                  <div className="bg-slate-50 p-3 border-b border-slate-200">
                     <div className="flex items-center">
-                      <div className="text-amber-500 mr-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-700 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
+                      <h3 className="text-base font-semibold text-gray-800">Crime and Demographic Correlations</h3>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-white">
+                    <div className="mb-3 rounded-lg py-2 px-3 border-l-3 border-slate-300 bg-slate-50">
+                      <p className="text-gray-700 text-xs">
+                        Key correlations between 2023 census data and 2024 crime incidents:
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Income Correlation Card */}
+                      <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                        <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
+                          <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <h4 className="font-semibold text-gray-800 text-md">Income Correlation</h4>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-baseline mb-2">
+                            <span className="text-2xl font-bold text-green-600 mr-2">2.3x</span>
+                            <span className="text-sm text-gray-500">higher crime rate</span>
+                          </div>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            Areas with median household income below $85,000 show higher violent crime rates compared to areas with income above $125,000.
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-gray-700">
-                        <strong>Note:</strong> Correlation does not imply causation. Consider these insights alongside other factors.
-                      </span>
+                      
+                      {/* Education Impact Card */}
+                      <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                        <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+                          <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                            </svg>
+                          </div>
+                          <h4 className="font-semibold text-gray-800 text-md">Education Impact</h4>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-baseline mb-2">
+                            <span className="text-2xl font-bold text-blue-600 mr-2">40%</span>
+                            <span className="text-sm text-gray-500">fewer violent crimes</span>
+                          </div>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            Neighborhoods with higher education rates (75%+ with Bachelor's degrees) experience fewer violent crimes but similar property crime rates.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Housing Value Patterns Card */}
+                      <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                        <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white">
+                          <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                          </div>
+                          <h4 className="font-semibold text-gray-800 text-md">Housing Value Patterns</h4>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-baseline mb-2">
+                            <span className="text-2xl font-bold text-indigo-600 mr-2">$750,000+</span>
+                            <span className="text-sm text-gray-500">housing values</span>
+                          </div>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            Areas with higher housing values show different crime patterns: higher rates of theft but lower violent crime.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Poverty Impact Card */}
+                      <div className="rounded-lg bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                        <div className="flex items-center p-4 border-b border-gray-100 bg-gradient-to-r from-red-50 to-white">
+                          <div className="bg-white rounded-full p-2 mr-3 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                            </svg>
+                          </div>
+                          <h4 className="font-semibold text-gray-800 text-md">Poverty Impact</h4>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-baseline mb-2">
+                            <span className="text-2xl font-bold text-red-600 mr-2">2.8x</span>
+                            <span className="text-sm text-gray-500">more violent crime</span>
+                          </div>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            High poverty areas ({">"} 17%) experience more violent crime incidents than areas with poverty rates below 7%.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 py-2 px-3 rounded border border-amber-200 bg-amber-50 text-xs">
+                      <div className="flex items-center">
+                        <div className="text-amber-500 mr-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-700">
+                          <strong>Note:</strong> Correlation does not imply causation. Consider these insights alongside other factors.
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </section>
 

@@ -420,6 +420,43 @@ const CustomTooltip = ({ active, payload }) => {
             )}
           </ResponsiveContainer>
           
+          {/* Crime Type Color Legend */}
+          {!showCensusOverlay && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <p className="text-xs font-medium text-gray-700 mb-2">Crime Type Colors:</p>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs">
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: CRIME_COLORS['HOMICIDE'] }}></span>
+                  <span>Homicide</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: CRIME_COLORS['ASSAULT W/DANGEROUS WEAPON'] }}></span>
+                  <span>Assault</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: CRIME_COLORS['ROBBERY'] }}></span>
+                  <span>Robbery</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: CRIME_COLORS['BURGLARY'] }}></span>
+                  <span>Burglary</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: CRIME_COLORS['MOTOR VEHICLE THEFT'] }}></span>
+                  <span>Motor Vehicle Theft</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: CRIME_COLORS['THEFT F/AUTO'] }}></span>
+                  <span>Theft F/Auto</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: CRIME_COLORS['THEFT/OTHER'] }}></span>
+                  <span>Theft/Other</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Legend for correlation colors when overlay is enabled */}
           {showCensusOverlay && (
             <div className="mt-2 pt-3 border-t border-gray-200">

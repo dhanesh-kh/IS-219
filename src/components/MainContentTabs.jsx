@@ -1,28 +1,21 @@
 import React, { useState } from 'react';
-import CrimeTypeChart from './CrimeTypeChart';
 import HeatMap from './HeatMap';
 import TemporalAnalysis from './TemporalAnalysis';
 import NeighborhoodAnalysis from './NeighborhoodAnalysis';
 
 const MainContentTabs = ({ updateKeyInsights, updateAreaAnalysis, updateTemporalPatterns }) => {
-  const [activeTab, setActiveTab] = useState('crimeTypes');
+  // If activeTab was previously set to 'crimeTypes', default to 'heatMap' instead
+  const [activeTab, setActiveTab] = useState('heatMap');
 
   const tabs = [
-    { id: 'crimeTypes', label: 'Crime Types', icon: <GraphIcon className="w-4 h-4" />, dotColor: 'bg-blue-600' },
     { id: 'heatMap', label: 'Heat', icon: <MapIcon className="w-4 h-4" />, dotColor: 'bg-green-600' },
     { id: 'temporal', label: 'Temporal Analysis', icon: <ClockIcon className="w-4 h-4" />, dotColor: 'bg-purple-600' },
-    { id: 'neighborhood', label: 'Neighborhood Analysis', icon: <BuildingIcon className="w-4 h-4" />, dotColor: 'bg-orange-600' }
+    { id: 'neighborhood', label: 'Area & Crime Analysis', icon: <BuildingIcon className="w-4 h-4" />, dotColor: 'bg-orange-600' }
   ];
 
   // Get the appropriate tab content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'crimeTypes':
-        return (
-          <div className="bg-white p-4 rounded-lg">
-            <CrimeTypeChart />
-          </div>
-        );
       case 'heatMap':
         return (
           <div className="bg-white p-4 rounded-lg">
